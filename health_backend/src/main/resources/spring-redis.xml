@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:redis.properties"/>
+    <!--配置redis连接池-->
+    <bean class="redis.clients.jedis.JedisPoolConfig" id="poolConfig">
+        <property name="maxIdle" value="${redis.maxIdle}"/>
+        <property name="maxTotal" value="${redis.maxTotal}"/>
+    </bean>
+    <!--获取redis的连接工厂-->
+    <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" id="connectionFactory"
+          p:host-name="${redis.host}" p:password="${redis.pass}" p:port="${redis.port}" p:poolConfig-ref="poolConfig">
+    </bean>
+    <!--获取redisTemplate-->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+</beans>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <context:annotation-config></context:annotation-config>
+
+    <bean id="job" class="cn.webdai.init.InitJob"/>
+
+    <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="jobDetail">
+        <property name="targetObject" ref="job"/>
+        <property name="targetMethod" value="cleanImg"/>
+    </bean>
+
+    <!--注册一个触发器-->
+    <bean id="myTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobDetail"/>
+        <!--指定触发时间-->
+        <property name="cronExpression">
+            <value>0/30 * * * * ?</value>
+        </property>
+    </bean>
+
+    <!--注册一个同一的调度工厂 通过工厂调度任务-->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" id="scheduler">
+        <!--注册多个触发器-->
+        <property name="triggers">
+            <list>
+                <ref bean="myTrigger"/>
+            </list>
+        </property>
+    </bean>
+</beans>
