@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-     <!--配置服务器启动 创建容器-->
-         <context-param>
-             <param-name>contextConfigLocation</param-name>
-             <param-value>classpath:applicationContext.xml</param-value>
-         </context-param>
-         <listener>
-             <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-         </listener>
+    <!--配置服务器启动 创建容器-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
     <!--创建SpringMVC的核心-->
     <servlet>
@@ -50,6 +50,4 @@
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-
 </web-app>
