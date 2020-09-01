@@ -9,10 +9,9 @@
        http://code.alibabatech.com/schema/dubbo/dubbo.xsd
         http://www.springframework.org/schema/mvc
          http://www.springframework.org/schema/mvc/spring-mvc.xsd">
-
+    <!--消费服务-->
     <dubbo:application name="health_mobile"/>
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:annotation package="cn.webdai.controller"/>
-
+    <dubbo:registry address="zookeeper://172.168.20.220:2181"/>
+    <dubbo:annotation package="com.pangzhao.controller"/>
     <mvc:annotation-driven/>
 </beans>

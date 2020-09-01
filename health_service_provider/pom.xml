@@ -4,24 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>health_parent</artifactId>
-        <groupId>cn.webdai</groupId>
+        <groupId>com.pangzhao</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>cn.webdai</groupId>
+    <groupId>com.pangzhao</groupId>
     <artifactId>health_service_provider</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-
+    <!--依赖坐标-->
     <dependencies>
         <dependency>
-            <groupId>cn.webdai</groupId>
+            <groupId>com.pangzhao</groupId>
             <artifactId>health_interface</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
+    <!--插件-->
     <build>
         <plugins>
             <plugin>
@@ -30,7 +29,7 @@
                 <version>2.2</version>
                 <configuration>
                     <!-- 指定端口 -->
-                    <port>81</port>
+                    <port>8081</port>
                     <!-- 请求路径 -->
                     <path>/</path>
                 </configuration>

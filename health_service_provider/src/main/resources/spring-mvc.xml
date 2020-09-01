@@ -11,8 +11,7 @@
          http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <dubbo:application name="health_service_provider"/>
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:annotation package="cn.webdai.service"/>
-
+    <dubbo:registry address="zookeeper://172.168.20.220:2181"/>
+    <dubbo:annotation package="com.pangzhao.service"/>
     <mvc:annotation-driven/>
 </beans>

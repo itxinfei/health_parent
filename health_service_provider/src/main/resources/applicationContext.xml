@@ -9,8 +9,6 @@
         http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/tx
         http://www.springframework.org/schema/tx/spring-tx.xsd">
-
-
     <!--读取配置文件-->
     <context:property-placeholder location="classpath:jdbc.properties"/>
     <!--配置数据库连接池-->
@@ -20,7 +18,6 @@
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
     </bean>
-
     <!--配置SqlSessionFactory对象-->
     <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
         <property name="dataSource" ref="datasource"/>
@@ -37,18 +34,14 @@
             </array>
         </property>
     </bean>
-
     <!--扫描接口生成的代理对象-->
     <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer" id="mapper">
-        <property name="basePackage" value="cn.webdai.mapper"/>
+        <property name="basePackage" value="com.pangzhao.mapper"/>
     </bean>
-
     <!--开启事务管理器-->
     <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="transactionManager">
         <property name="dataSource" ref="datasource"/>
     </bean>
-
     <!--开启事务管理的注解支持-->
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
-
 </beans>

@@ -4,24 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>health_parent</artifactId>
-        <groupId>cn.webdai</groupId>
+        <groupId>com.pangzhao</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>cn.webdai</groupId>
+    <groupId>com.pangzhao</groupId>
     <artifactId>health_job</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <!--依赖坐标-->
     <dependencies>
         <dependency>
-            <groupId>cn.webdai</groupId>
+            <groupId>com.pangzhao</groupId>
             <artifactId>health_interface</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -33,7 +32,6 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz-jobs</artifactId>
         </dependency>
-        <!--spring-data-redis-->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
@@ -53,7 +51,7 @@
                 <version>2.2</version>
                 <configuration>
                     <!-- 指定端口 -->
-                    <port>84</port>
+                    <port>8084</port>
                     <!-- 请求路径 -->
                     <path>/</path>
                 </configuration>

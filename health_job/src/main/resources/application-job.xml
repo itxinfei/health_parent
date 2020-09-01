@@ -7,7 +7,7 @@
 
     <context:annotation-config></context:annotation-config>
 
-    <bean id="job" class="cn.webdai.init.InitJob"/>
+    <bean id="job" class="com.pangzhao.init.InitJob"/>
 
     <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="jobDetail">
         <property name="targetObject" ref="job"/>

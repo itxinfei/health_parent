@@ -16,7 +16,8 @@
         <security:headers>
             <security:frame-options policy="SAMEORIGIN"></security:frame-options>
         </security:headers>
-        <security:intercept-url pattern="/pages/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/pages/a/**" access="isAuthenticated()"/>
+
         <!--使用自定义的登录页面-->
         <security:form-login login-page="/login.html"
                              username-parameter="username"
@@ -45,7 +46,7 @@
     <!--bcryptCode 加密方式-->
     <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="bCryptPasswordEncoder"/>
     <!--具体登录验证类-->
-    <bean class="cn.webdai.service.SpringSecurityUserService" id="securityUserService"/>
+    <bean class="com.pangzhao.service.SpringSecurityUserService" id="securityUserService"/>
 
     <!--开启注册控制权限-->
     <security:global-method-security pre-post-annotations="enabled"/>
