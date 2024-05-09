@@ -11,7 +11,7 @@
          http://www.springframework.org/schema/mvc/spring-mvc.xsd">
     <!--消费服务-->
     <dubbo:application name="health_backend"/>
-    <dubbo:registry address="zookeeper://172.168.20.220:2181"/>
+    <dubbo:registry address="zookeeper://localhost:2181"/>
     <dubbo:annotation package="com.pangzhao"/>
     <!--配置文件-->
     <import resource="spring-security.xml"/>
