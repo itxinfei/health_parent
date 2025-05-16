@@ -3,27 +3,35 @@
 
 ![Logo](Doc/Logo.png)
 
-# 🏥 黑马传智健康  
+# 🏥 传智健康  
 **健康管理机构业务系统 | 实现健康管理可视化、会员管理专业化、评估数字化、干预流程化**  
 
-<p align="center">
-  <a href="https://gitee.com/itxinfei">
-    <img alt="Author" src="https://img.shields.io/badge/心飞为你飞-https%3A%2F%2Fgitee.com%2Fitxinfei-green">
-  </a> 
-  <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=5iR4ej_YaZqZqCIRXwtN_-uF1JzBgw6v&jump_from=webapi&authKey=JKv1+3uSvDoBhZxQtg+9d4QCS88YdG9UBNUKhi2IyyxK/RvQ+zjn5WWdP1wkLMSC">
-    <img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Java项目交流" title="Java项目交流">
-  </a>
-  <a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=f0hLSE9OTkdHTT8ODlEcEBI">
-    <img alt="Email" src="https://img.shields.io/badge/mail-747011882@qq.com-red">
-  </a> 
-  <img alt="JDK" src="https://img.shields.io/badge/JDK-1.8%2B-brightgreen">
-  <img alt="Maven" src="https://img.shields.io/badge/maven-3.6.3%2B-yellowgreen">
-  <img alt="License" src="https://img.shields.io/badge/license-Apache-green">
-</p>
+<!-- 联系信息与技术栈徽章 -->
+  <p align="center">
+    <a href="https://gitee.com/itxinfei">
+      <img alt="Author" src="https://img.shields.io/badge/心飞为你飞-https%3A%2F%2Fgitee.com%2Fitxinfei-green">
+    </a> 
+    <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=5iR4ej_YaZqZqCIRXwtN_-uF1JzBgw6v&jump_from=webapi&authKey=JKv1+3uSvDoBhZxQtg+9d4QCS88YdG9UBNUKhi2IyyxK/RvQ+zjn5WWdP1wkLMSC">
+      <img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Java项目交流" title="Java项目交流">
+    </a>
+    <a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=f0hLSE9OTkdHTT8ODlEcEBI">
+      <img alt="Email" src="https://img.shields.io/badge/mail-747011882@qq.com-red">
+    </a> 
+  </p>
 
+  <!-- 技术栈滚动徽章 -->
+  <div style="white-space: nowrap; overflow-x: auto; padding: 10px 0;">
+    <img alt="JDK" src="https://img.shields.io/badge/JDK-1.8%2B-brightgreen">
+    <img alt="Maven" src="https://img.shields.io/badge/maven-3.6.3%2B-yellowgreen">
+    <img alt="License" src="https://img.shields.io/badge/license-Apache-green">
+    <img alt="前端" src="https://img.shields.io/badge/前端-Vue.js%20+%20Element%20UI-blueviolet">
+    <img alt="服务层" src="https://img.shields.io/badge/服务层-Spring%20Boot%20+%20MyBatis-orange">
+    <img alt="数据库" src="https://img.shields.io/badge/数据库-MySQL%208.0%20+%20Redis-yellowgreen">
+    <img alt="中间件" src="https://img.shields.io/badge/中间件-RabbitMQ%20+%20Nginx-blue">
+  </div>
 </div>
 
----
+
 
 ## 🌐 项目演示  
 **在线体验地址**：  
@@ -88,7 +96,10 @@ open http://localhost:8080/pages/main.html
 
 ---
 
-## 📞 联系我们  
-- **QQ交流群**：[661543188](https://qm.qq.com/cgi-bin/qm/qr?k=5iR4ej_YaZqZqCIRXwtN_-uF1JzBgw6v&jump_from=webapi&authKey=JKv1+3uSvDoBhZxQtg+9d4QCS88YdG9UBNUKhi2IyyxK/RvQ+zjn5WWdP1wkLMSC)  
-- **邮箱支持**：[747011882@qq.com](mailto:747011882@qq.com)  
+---
+### 🔗 项目链接 & 社区支持  
+![微信公众号二维码](docs/心飞为你飞.jpg)  
+🚀 项目地址：[https://gitee.com/itxinfei/health_parent](https://gitee.com/itxinfei/health_parent)  
+👥 QQ交流群：[661543188](https://qm.qq.com/cgi-bin/qm/qr?k=gNgch-wCkfUu-QbI7DZSudrax2BN7vY0&jump_from=webapi&authKey=QHSRnxQvu+h5S3AXGn/DSHrVPiFQAYEk6bSlCE1lS276SFjQAUagV4FG7bHf0OSM)  
+📧 邮箱支持：[747011882@qq.com](http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=f0hLSE9OTkdHTT8ODlEcEBI)  
 
