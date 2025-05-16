@@ -82,8 +82,6 @@ open http://localhost:8080/pages/main.html
 ```
 
 ---
-
----
 ### 🔗 项目链接 & 社区支持  
 ![微信公众号二维码](docs/心飞为你飞.jpg)  
 🚀 项目地址：[https://gitee.com/itxinfei/health_parent](https://gitee.com/itxinfei/health_parent)  
