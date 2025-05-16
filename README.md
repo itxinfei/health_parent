@@ -1,7 +1,7 @@
 
 <div align="center">
 
-![Logo](Doc/Logo.png)
+![Logo](docs/Logo.png)
 
 # 🏥 传智健康  
 **健康管理机构业务系统 | 实现健康管理可视化、会员管理专业化、评估数字化、干预流程化**  
