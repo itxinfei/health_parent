@@ -18,6 +18,9 @@
   </div>
 </div>
 
+🚀 项目地址：https://gitee.com/itxinfei/pinda-tms
+👥 QQ交流群：661543188
+📧 邮箱支持：747011882@qq.com
 
 
 ## 🌐 项目演示  
