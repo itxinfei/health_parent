@@ -5,7 +5,7 @@ FROM maven:3.9 AS maven-tools
 
 FROM eclipse-temurin:25-jdk AS build
 COPY --from=maven-tools /usr/share/maven /usr/share/maven
-COPY --from=maven-tools /usr/local/bin/mvn /usr/local/bin/mvn
+ENV PATH="/usr/share/maven/bin:${PATH}"
 WORKDIR /build
 COPY pom.xml ./
 COPY xinfei-common ./xinfei-common
