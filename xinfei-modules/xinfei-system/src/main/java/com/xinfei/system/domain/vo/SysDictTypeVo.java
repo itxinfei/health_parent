@@ -1,7 +1,7 @@
 package com.xinfei.system.domain.vo;
 
-import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
-import cn.idev.excel.annotation.ExcelProperty;
+import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import com.xinfei.common.excel.annotation.ExcelDictFormat;
 import com.xinfei.common.excel.convert.ExcelDictConvert;
 import com.xinfei.system.domain.SysDictType;

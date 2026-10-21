@@ -1,7 +1,7 @@
 package com.xinfei.demo.domain.vo;
 
-import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
-import cn.idev.excel.annotation.ExcelProperty;
+import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import com.xinfei.demo.domain.TestTree;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
