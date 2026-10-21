@@ -1,0 +1,3 @@
+com.xinfei.common.encrypt.config.EncryptorAutoConfiguration
+com.xinfei.common.encrypt.config.ApiDecryptAutoConfiguration
+

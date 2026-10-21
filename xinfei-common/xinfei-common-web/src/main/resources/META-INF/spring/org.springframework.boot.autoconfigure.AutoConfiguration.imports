@@ -1,0 +1,4 @@
+com.xinfei.common.web.config.CaptchaConfig
+com.xinfei.common.web.config.FilterConfig
+com.xinfei.common.web.config.I18nConfig
+com.xinfei.common.web.config.ResourcesConfig

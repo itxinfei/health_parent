@@ -1,0 +1,16 @@
+package com.xinfei.system.mapper;
+
+import com.xinfei.common.mybatis.core.mapper.BaseMapperPlus;
+import com.xinfei.system.domain.SysOssConfig;
+import com.xinfei.system.domain.vo.SysOssConfigVo;
+
+/**
+ * 对象存储配置Mapper接口
+ *
+ * @author Lion Li
+ * @author 孤舟烟雨
+ * @date 2021-08-13
+ */
+public interface SysOssConfigMapper extends BaseMapperPlus<SysOssConfig, SysOssConfigVo> {
+
+}

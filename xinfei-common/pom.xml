@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>xinfei-vue-plus</artifactId>
+        <groupId>com.xinfei</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>xinfei-common-bom</module>
+        <module>xinfei-common-social</module>
+        <module>xinfei-common-core</module>
+        <module>xinfei-common-doc</module>
+        <module>xinfei-common-excel</module>
+        <module>xinfei-common-idempotent</module>
+        <module>xinfei-common-job</module>
+        <module>xinfei-common-log</module>
+        <module>xinfei-common-mail</module>
+        <module>xinfei-common-mybatis</module>
+        <module>xinfei-common-oss</module>
+        <module>xinfei-common-ratelimiter</module>
+        <module>xinfei-common-redis</module>
+        <module>xinfei-common-satoken</module>
+        <module>xinfei-common-security</module>
+        <module>xinfei-common-sms</module>
+        <module>xinfei-common-web</module>
+        <module>xinfei-common-translation</module>
+        <module>xinfei-common-sensitive</module>
+        <module>xinfei-common-json</module>
+        <module>xinfei-common-encrypt</module>
+        <module>xinfei-common-tenant</module>
+        <module>xinfei-common-websocket</module>
+        <module>xinfei-common-sse</module>
+    </modules>
+
+    <artifactId>xinfei-common</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        common 通用模块
+    </description>
+
+</project>

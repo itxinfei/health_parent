@@ -1,6 +1,6 @@
 # 心飞健康
 
-> 心飞健康 · 完整健康管理平台，基于 RuoYi-Vue-Plus 5.6.2 构建。
+> 心飞健康 · 完整健康管理平台，基于 RuoYi-Vue-Plus 构建。
 
 ## 平台简介
 
@@ -15,9 +15,9 @@
 
 | 类别 | 选型 |
 |---|---|
-| 基础框架 | RuoYi-Vue-Plus 5.6.2 |
-| 语言 / JDK | Java 17 / 21 |
-| 核心框架 | Spring Boot 3.5 |
+| 基础框架 | RuoYi-Vue-Plus |
+| 语言 / JDK | Java 25 |
+| 核心框架 | Spring Boot 4.1.1 |
 | 权限认证 | Sa-Token + JWT |
 | ORM | MyBatis-Plus |
 | 数据库 | MySQL（可切换 PostgreSQL 等） |
