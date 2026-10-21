@@ -29,6 +29,7 @@ jobs:
             -e SPRING_DATA_REDIS_PORT=6379 \
             -e SPRING_DATA_REDIS_PASSWORD=123456 \
             -e SNAIL_JOB_ENABLED=false \
+            -e SPRING_BOOT_ADMIN_CLIENT_ENABLED=false \
             xinfei/xfjk-admin:latest
 
       - name: 健康检查
