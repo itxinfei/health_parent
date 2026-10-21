@@ -18,8 +18,10 @@ jobs:
 
       - name: 部署容器
         run: |
+          docker network create xfjk-net 2>/dev/null || true
           docker rm -f xfjk-admin 2>/dev/null || true
           docker run -d --name xfjk-admin --restart always \
+            --network xfjk-net \
             -p 8180:8080 \
             -e TZ=Asia/Shanghai \
             -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL="jdbc:mysql://192.168.20.130:3306/xfjk?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true" \
@@ -42,5 +44,6 @@ jobs:
         run: |
           docker rm -f xfjk-web 2>/dev/null || true
           docker run -d --name xfjk-web --restart always \
+            --network xfjk-net \
             -p 8181:80 \
             xinfei/xfjk-web:latest
