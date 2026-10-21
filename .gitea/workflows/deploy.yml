@@ -34,3 +34,13 @@ jobs:
 
       - name: 健康检查
         run: sleep 30 && docker ps --filter name=xfjk-admin --format '{{.Status}}'
+
+      - name: 构建前端镜像
+        run: docker build -f Dockerfile.web -t xinfei/xfjk-web:latest .
+
+      - name: 部署前端容器
+        run: |
+          docker rm -f xfjk-web 2>/dev/null || true
+          docker run -d --name xfjk-web --restart always \
+            -p 8181:80 \
+            xinfei/xfjk-web:latest
