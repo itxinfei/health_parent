@@ -10,6 +10,7 @@ WORKDIR /build
 COPY pom.xml ./
 COPY xinfei-common ./xinfei-common
 COPY xinfei-modules ./xinfei-modules
+COPY xinfei-extend ./xinfei-extend
 COPY xinfei-admin ./xinfei-admin
 RUN mvn -q -B clean package -DskipTests -pl xinfei-admin -am
 
