@@ -17,7 +17,7 @@ public class XinfeiApplication {
         SpringApplication application = new SpringApplication(XinfeiApplication.class);
         application.setApplicationStartup(new BufferingApplicationStartup(2048));
         application.run(args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  RuoYi-Vue-Plus启动成功   ლ(´ڡ`ლ)ﾞ");
+        System.out.println("(♥◠‿◠)ﾉﾞ  心飞健康启动成功   ლ(´ڡ`ლ)ﾞ");
     }
 
 }
