@@ -1,0 +1,35 @@
+name: 部署心飞健康后端
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        run: |
+          git clone --depth 1 ${{ gitea.server_url }}/${{ gitea.repository }}.git /workspace/xfjk
+          cd /workspace/xfjk && git checkout ${{ gitea.sha }}
+
+      - name: 构建 Docker 镜像
+        run: cd /workspace/xfjk && docker build -t xinfei/xfjk-admin:latest .
+
+      - name: 部署容器
+        run: |
+          docker rm -f xfjk-admin 2>/dev/null || true
+          docker run -d --name xfjk-admin --restart always \
+            -p 8180:8180 \
+            -e TZ=Asia/Shanghai \
+            -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL="jdbc:mysql://192.168.20.130:3306/xfjk?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true" \
+            -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=xfjk \
+            -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD=123456 \
+            -e SPRING_DATA_REDIS_HOST=192.168.20.130 \
+            -e SPRING_DATA_REDIS_PORT=6379 \
+            -e SPRING_DATA_REDIS_PASSWORD=123456 \
+            -e SNAIL_JOB_ENABLED=false \
+            xinfei/xfjk-admin:latest
+
+      - name: 健康检查
+        run: sleep 30 && docker ps --filter name=xfjk-admin --format '{{.Status}}'
