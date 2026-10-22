@@ -13,6 +13,12 @@
 .PARAMETER IncludeLegacy
   同时扫描旧 health_* 模块（默认排除）。
 
+.PARAMETER IncludeFramework
+  全量扫描底座 vendored 代码（xfjk-common/*、xfjk-system/*、xfjk-demo/* 等）。
+  默认只扫业务代码白名单：xfjk-modules/xfjk-health-*、xfjk-web|app 的 src/mock、
+  各级 .env 文件、docs/sql。框架代码含启动横幅 System.out、Entity 用 java.util.Date
+  等既有写法，属铁律 9 豁免与「禁止顺手重构框架」范围，纳入默认扫描会恒报 ERROR。
+
 .PARAMETER Format
   输出格式：table（默认）或 json。
 
@@ -29,6 +35,7 @@
 param(
     [string]$Root,
     [switch]$IncludeLegacy,
+    [switch]$IncludeFramework,
     [ValidateSet('table', 'json')][string]$Format = 'table',
     [int]$MaxPerRule = 100
 )
@@ -57,15 +64,30 @@ if (-not $IncludeLegacy) {
 }
 $excludeRegex = '(?i)[\\/](' + (($excludeDirs | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')[\\/]'
 
+# docs 整体排除，但 docs/sql 是唯一受 DENY-008（冻结表 ALTER）约束的产物，必须扫。
+$alwaysScan = '(?i)[\\/]docs[\\/]sql[\\/]'
+
+# 业务代码白名单（默认扫描范围）。
+# 框架 vendored 代码（xfjk-common/*、xfjk-system/*、xfjk-demo/*、xfjk-generator/* 等）
+# 天然违反 DENY-001/003（启动横幅 System.out、BaseEntity/Entity 用 java.util.Date），
+# 而 §1 铁律 9 明文「Entity 映射除外」、且禁止顺手重构框架代码 ⇒ 默认不扫，
+# 需要全量审计时加 -IncludeFramework。
+$businessRegex = '(?i)([\\/](xfjk-modules[\\/]xfjk-health-[a-z0-9_-]+|xfjk-web[\\/](src|mock)|xfjk-app[\\/](src|mock))[\\/])|([\\/]\.env[\w.]*$)'
+
 $exts = @('.java', '.xml', '.yml', '.yaml', '.properties', '.ts', '.vue', '.js', '.sql')
 
+# Vite 的 .env* 文件无常规扩展名（.env.production 的 Extension 是 .production），
+# 单独按文件名纳入——DENY-020 依赖它检查前端加密开关。
 $files = Get-ChildItem -LiteralPath $Root -Recurse -File -ErrorAction SilentlyContinue |
-    Where-Object { $exts -contains $_.Extension.ToLowerInvariant() } |
-    Where-Object { $_.FullName -notmatch $excludeRegex } |
+    Where-Object { ($exts -contains $_.Extension.ToLowerInvariant()) -or ($_.Name -match '(?i)^\.env') } |
+    Where-Object { $_.FullName -notmatch $excludeRegex -or $_.FullName -match $alwaysScan } |
+    Where-Object { $IncludeFramework -or $_.FullName -match $businessRegex } |
     Where-Object { $_.Name -notmatch '(?i)\.min\.(js|css)$' } |
     Where-Object { $_.Name -ine '.flattened-pom.xml' }
 
 # 规则：Name / Pattern / Ext（空=全部类型） / Severity / Message
+#      Scope（可选：路径必须匹配的正则）/ NotScope（可选：路径不得匹配的正则）
+#      —— 前端规则一律 Scope 到工程化 src 树，避免误报仍待废弃的 xfjk-web 静态页存量。
 $rules = @(
     @{ Name = 'DENY-001'; Pattern = '\bSystem\.(out|err)\b'; Ext = @('.java'); Severity = 'ERROR'; Message = '禁止 System.out/err，改用 SLF4J' }
     @{ Name = 'DENY-002'; Pattern = '\.printStackTrace\s*\('; Ext = @('.java'); Severity = 'ERROR'; Message = '禁止 printStackTrace，记录日志' }
@@ -81,13 +103,36 @@ $rules = @(
     @{ Name = 'DENY-012'; Pattern = '<artifactId>\s*ruoyi-'; Ext = @('.xml'); Severity = 'WARN'; Message = 'artifact 前缀应为 xfjk-，检查 ruoyi- 残留' }
     @{ Name = 'DENY-013'; Pattern = '\bconsole\.(log|debug|info)\s*\('; Ext = @('.ts', '.vue', '.js'); Severity = 'WARN'; Message = '生产代码避免 console 输出' }
     @{ Name = 'DENY-014'; Pattern = '(?i)@CrossOrigin'; Ext = @('.java'); Severity = 'WARN'; Message = '统一走全局 CORS 配置，避免 @CrossOrigin 散落' }
+    # ---- 前端（plus-ui 工程化 SPA，17 决策 47；约定见 03 §9.1、15 §5.1）----
+    @{ Name = 'DENY-015'; Pattern = 'v-hasRole(?!s)'; Ext = @('.vue', '.ts', '.js'); Severity = 'ERROR';
+       Scope = 'xfjk-web[\\/](src|mock)';
+       Message = '指令注册的是复数 hasRoles，写单数 v-hasRole 不报错但被 Vue 忽略 = 按钮全显示的静默越权；统一用 v-hasPermi' }
+    @{ Name = 'DENY-016'; Pattern = '(?i)^\s*import\s+axios\b|from\s+["'']axios["'']|axios\.create\s*\('; Ext = @('.vue', '.ts', '.js'); Severity = 'ERROR';
+       Scope = 'xfjk-(web|app)[\\/](src|mock)'; NotScope = 'utils[\\/]request\.ts$';
+       Message = '禁止页面/业务代码自建 axios 实例，统一走框架唯一的 src/utils/request.ts' }
+    @{ Name = 'DENY-017'; Pattern = '(?i)\bnew\s+Vue\s*\(|from\s+["'']element-ui["'']|\bELEMENT\.'; Ext = @('.vue', '.ts', '.js'); Severity = 'ERROR';
+       Scope = 'xfjk-(web|app)[\\/](src|mock)';
+       Message = 'Vue 2 / Element-UI 2 形态已被决策 47 废弃（旧静态页参照走 git 历史，不落工作区）' }
+    @{ Name = 'DENY-018'; Pattern = '#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b'; Ext = @('.vue'); Severity = 'WARN';
+       Scope = 'xfjk-web[\\/]src[\\/](views|api)[\\/]health';
+       Message = '业务页禁止硬编码色值，引用 19 §2.1 令牌（plus-ui 主题变量 / uno.config.ts）' }
+    @{ Name = 'DENY-019'; Pattern = '[''"][^''"]*\.do(?:\?|[''"])'; Ext = @('.vue', '.ts', '.js'); Severity = 'ERROR';
+       Scope = 'xfjk-(web|app)[\\/](src|mock)';
+       Message = '禁止调用原系统 .do 存量接口，新接口一律 /health/**、/app/**、/system/**' }
+    @{ Name = 'DENY-020'; Pattern = '(?i)^\s*VITE_APP_ENCRYPT\s*=\s*true\s*$'; Severity = 'ERROR';
+       Scope = '[\\/]\.env';
+       Message = '后端 api-decrypt.enabled=false 时前端必须 VITE_APP_ENCRYPT=false，否则 /auth/login 403（02 §5、17 决策 47）' }
 )
 
 $findings = New-Object System.Collections.Generic.List[object]
 
 foreach ($file in $files) {
     $ext = $file.Extension.ToLowerInvariant()
-    $applicable = @($rules | Where-Object { ($null -eq $_.Ext) -or ($_.Ext -contains $ext) })
+    $applicable = @($rules | Where-Object {
+        (($null -eq $_.Ext) -or ($_.Ext -contains $ext)) -and
+        (($null -eq $_.Scope) -or ($file.FullName -match $_.Scope)) -and
+        (($null -eq $_.NotScope) -or ($file.FullName -notmatch $_.NotScope))
+    })
     if ($applicable.Count -eq 0) { continue }
 
     $lineNo = 0
@@ -101,6 +146,8 @@ foreach ($file in $files) {
                 if ($rule.Name -eq 'DENY-005' -and $file.Name -match '(?i)^logback.*\.xml$') { continue }
                 # MyBatis-Plus 条件构造器 ${ew.xxx} 为框架内置安全占位
                 if ($rule.Name -eq 'DENY-005' -and $line -match '\$\{\s*ew\.') { continue }
+                # §1 铁律 9：java.util.Date 在 Entity 映射层豁免（domain/ 根下的实体类）
+                if ($rule.Name -eq 'DENY-003' -and $file.FullName -match '[\\/]domain[\\/][^\\/]+\.java$') { continue }
                 # org.dromara.sms4j 为第三方短信 SDK 包名，不在改名范围
                 if ($rule.Name -eq 'DENY-011' -and $line -match '\borg\.dromara\.sms4j\b') { continue }
                 if ($line -match $rule.Pattern) {
