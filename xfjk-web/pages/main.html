@@ -1,216 +1,183 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <!-- 页面meta -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>心飞健康</title>
-    <meta name="description" content="心飞健康">
-    <meta name="keywords" content="心飞健康">
-    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-    <!-- 引入样式 -->
-    <link rel="stylesheet" href="../plugins/elementui/index.css">
-    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <style type="text/css">
-        .el-main {
-            position: absolute;
-            top: 70px;
-            bottom: 0px;
-            left: 200px;
-            right: 10px;
-            padding: 0;
-        }
-    </style>
-</head>
-<body class="hold-transition skin-purple sidebar-mini">
-<div id="app">
-    <el-container>
-        <el-header class="main-header" style="height:70px;">
-            <nav class="navbar navbar-static-top" :class=''>
-                <!-- Logo -->
-                <a href="#" class="logo" style="text-align:center">
-                    <span class="logo-lg"><img src="../img/logo.png"></span>
-                </a>
-                <div class="right-menu">
-                    <span class="help"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>帮助</span>
-                    <el-dropdown class="avatar-container right-menu-item" trigger="click">
-                        <div class="avatar-wrapper">
-                            <img src="../img/user2-160x160.jpg" class="user-avatar">
-                            {{username}}
-                        </div>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item divided>
-                                <span style="display:block;">修改密码</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item divided>
-                                <a style="display:block;" href="/logout.do">退出</a>
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>心飞健康 · 工作台</title>
+        <meta name="description" content="心飞健康">
+        <meta name="keywords" content="心飞健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../css/tokens.css">
+        <style>
+            body { background: var(--bg-page); }
+            .dash { padding: var(--space-4); }
+
+            /* 欢迎栏 */
+            .welcome { margin-bottom: var(--space-4); }
+            .welcome .hello { font-size: var(--font-size-lg); font-weight: 600; color: var(--text-title); }
+            .welcome .sub { font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: var(--space-1); }
+
+            /* 统计卡片行 */
+            .stat-row { display: flex; gap: var(--space-4); margin-bottom: var(--space-4); }
+            .stat-card {
+                flex: 1;
+                background: var(--bg-card);
+                border: 1px solid var(--border-base);
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-card);
+                padding: var(--space-6);
+            }
+            .stat-card .label { font-size: var(--font-size-xs); color: var(--text-secondary); }
+            .stat-card .value {
+                font-size: 26px;
+                font-weight: 600;
+                color: var(--text-title);
+                font-variant-numeric: tabular-nums;
+                margin-top: var(--space-2);
+            }
+            .stat-card .value .unit { font-size: var(--font-size-xs); font-weight: 400; color: var(--text-secondary); margin-left: var(--space-1); }
+
+            /* 图表卡 */
+            .chart-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border-base);
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-card);
+                padding: var(--space-4);
+            }
+            .chart-card .page-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
+            .chart-card .page-card-title { font-size: var(--font-size-md); font-weight: 600; color: var(--text-title); }
+            .chart-card .range-tip { font-size: var(--font-size-xs); color: var(--text-secondary); }
+            #reportChart { width: 100%; height: 360px; }
+        </style>
+    </head>
+    <body>
+        <div id="app" class="dash">
+            <!-- 欢迎栏 -->
+            <div class="welcome">
+                <div class="hello">{{ greeting }}，{{ username }}</div>
+                <div class="sub">欢迎使用心飞健康管理平台</div>
+            </div>
+
+            <!-- 统计卡片行 -->
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="label">会员总数</div>
+                    <div class="value">{{ report.memberCount || 0 }}<span class="unit">人</span></div>
                 </div>
-            </nav>
-        </el-header>
-        <el-container>
-            <el-aside width="200px">
-                <el-menu>
-                    <el-submenu v-for="menu in menuList" :index="menu.path">
-                        <template slot="title">
-                            <i class="fa" :class="menu.icon"></i>
-                            {{menu.title}}
-                        </template>
-                        <template v-for="child in menu.children">
-                            <el-menu-item :index="child.path">
-                                <a :href="child.linkUrl" target="right">{{child.title}}</a>
-                            </el-menu-item>
-                        </template>
-                    </el-submenu>
-                </el-menu>
-            </el-aside>
-            <el-container>
-                <iframe name="right" class="el-main" src="ordersetting.html" width="100%" height="580px"
-                        frameborder="0"></iframe>
-            </el-container>
-        </el-container>
-    </el-container>
-</div>
-</body>
-<!-- 引入组件库 -->
-<script src="../js/vue.js"></script>
-<script src="../plugins/elementui/index.js"></script>
-<script src="/js/axios-0.18.0.js"></script>
-<script type="text/javascript" src="../js/jquery.min.js"></script>
-<script>
-    new Vue({
-        el: '#app',
-        data: {
-            menuList: [
-                {
-                    "path": "1",
-                    "title": "工作台",
-                    "icon": "fa-dashboard",
-                    "children": []
+                <div class="stat-card">
+                    <div class="label">新增会员</div>
+                    <div class="value">{{ report.todayNewMember || 0 }}<span class="unit">人</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">今日预约</div>
+                    <div class="value">{{ report.todayOrderNumber || 0 }}<span class="unit">单</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">本月预约</div>
+                    <div class="value">{{ report.thisMonthOrderNumber || 0 }}<span class="unit">单</span></div>
+                </div>
+            </div>
+
+            <!-- 报表图表卡 -->
+            <div class="chart-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">运营数据概览</span>
+                    <span class="range-tip">近一周预约与到检趋势</span>
+                </div>
+                <div v-show="hasTrend" id="reportChart"></div>
+                <div v-show="!hasTrend" class="chart-empty" style="height: 360px;">暂无统计数据</div>
+            </div>
+        </div>
+
+        <!-- 引入组件库 -->
+        <script src="../js/vue.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+        <script src="../js/echarts.js"></script>
+        <script src="../js/axios-0.18.0.js"></script>
+        <script src="../js/config.js"></script>
+        <script src="../js/api.js"></script>
+        <script>
+            new Vue({
+                el: '#app',
+                data: {
+                    username: '',
+                    greeting: '',
+                    report: {}
                 },
-                {
-                    "path": "2",
-                    "title": "会员管理",
-                    "icon": "fa-user-md",
-                    "children": [
-                        {
-                            "path": "/2-1",
-                            "title": "会员档案",
-                            "linkUrl": "member.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/2-2",
-                            "title": "体检上传",
-                            "linkUrl": "examinationupload.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/2-3",
-                            "title": "会员统计",
-                            "linkUrl": "all-item-list.html",
-                            "children": []
-                        },
-                    ]
+                computed: {
+                    hasTrend() {
+                        return !!(this.report.reportDate && this.report.reportDate.length);
+                    }
                 },
-                {
-                    "path": "3",
-                    "title": "预约管理",
-                    "icon": "fa-tty",
-                    "children": [
-                        {
-                            "path": "/3-1",
-                            "title": "预约列表",
-                            "linkUrl": "ordersettinglist.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/3-2",
-                            "title": "预约设置",
-                            "linkUrl": "ordersetting.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/3-3",
-                            "title": "套餐管理",
-                            "linkUrl": "setmeal.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/3-4",
-                            "title": "检查组管理",
-                            "linkUrl": "checkgroup.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/3-5",
-                            "title": "检查项管理",
-                            "linkUrl": "checkitem.html",
-                            "children": []
-                        },
-                    ]
+                created() {
+                    // 按时段生成问候语
+                    let hour = new Date().getHours();
+                    this.greeting = hour < 6 ? '凌晨好' : hour < 9 ? '早上好' : hour < 12 ? '上午好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
+                    // 当前登录用户
+                    this.username = XfjkAuth.username() || '未登录';
+                    axios.get(`/user/findUsername.do`).then(response => {
+                        this.username = response.data.username || this.username;
+                    }).catch(() => {});
+                    // 运营数据（复用运营报表接口）
+                    axios.get(`/report/getBusinessReportData.do`).then(response => {
+                        this.report = response.data || {};
+                        // 图表容器由 v-show 控制，需等 DOM 更新后才有宽度
+                        this.$nextTick(this.renderChart);
+                    }).catch(() => {});
                 },
-                {
-                    "path": "4",
-                    "title": "健康评估",
-                    "icon": "fa-stethoscope",
-                    "children": [
-                        {
-                            "path": "/4-1",
-                            "title": "中医体质辨识",
-                            "linkUrl": "all-medical-list.html",
-                            "children": []
-                        },
-                    ]
-                },
-                {
-                    "path": "5",     //菜单项所对应的路由路径
-                    "title": "统计分析",     //菜单项名称
-                    "icon": "fa-heartbeat",
-                    "children": [//是否有子菜单，若没有，则为[]
-                        {
-                            "path": "/5-1",
-                            "title": "工作量统计",
-                            "linkUrl": "all-medical-list.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/5-2",
-                            "title": "用户统计",
-                            "linkUrl": "report_member.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/5-3",
-                            "title": "套餐占比统计",
-                            "linkUrl": "report_setmeal.html",
-                            "children": []
-                        },
-                        {
-                            "path": "/5-4",
-                            "title": "运营数据统计",
-                            "linkUrl": "report_business.html",
-                            "children": []
-                        }
-                    ]
+                methods: {
+                    renderChart() {
+                        let el = document.getElementById('reportChart');
+                        if (!el || !this.hasTrend) return;
+                        let chart = echarts.init(el);
+                        chart.setOption({
+                            tooltip: { trigger: 'axis' },
+                            legend: { bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { color: '#4e5969', fontSize: 12 } },
+                            grid: { left: 40, right: 24, top: 24, bottom: 48 },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: this.report.reportDate || [],
+                                axisLine: { lineStyle: { color: '#e5e6eb' } },
+                                axisLabel: { color: '#86909c', fontSize: 12 },
+                                axisTick: { show: false }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                axisLine: { show: false },
+                                axisLabel: { color: '#86909c', fontSize: 12 },
+                                splitLine: { lineStyle: { color: '#f2f3f5' } }
+                            },
+                            series: [
+                                {
+                                    name: '预约数',
+                                    type: 'line',
+                                    smooth: true,
+                                    symbol: 'circle',
+                                    symbolSize: 6,
+                                    data: this.report.todayOrderNumberList || [],
+                                    itemStyle: { color: '#00A870' },
+                                    lineStyle: { width: 2 },
+                                    areaStyle: { color: 'rgba(0,168,112,.08)' }
+                                },
+                                {
+                                    name: '新增会员',
+                                    type: 'line',
+                                    smooth: true,
+                                    symbol: 'circle',
+                                    symbolSize: 6,
+                                    data: this.report.todayNewMemberList || [],
+                                    itemStyle: { color: '#86909c' },
+                                    lineStyle: { width: 2 }
+                                }
+                            ]
+                        });
+                        window.addEventListener('resize', () => chart.resize());
+                    }
                 }
-            ],
-            username: ''
-        },
-        created() {
-            axios.get(`/user/findUsername.do`).then(response => {
-                this.username = response.data.username;
             });
-        }
-    });
-    $(function () {
-        let wd = 200;
-        $(".el-main").css('width', $('body').width() - wd + 'px');
-    });
-</script>
-
-
+        </script>
+    </body>
 </html>

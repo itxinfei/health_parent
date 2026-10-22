@@ -1,10 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>心飞健康 · 体检上传</title>
+        <meta name="description" content="心飞健康">
+        <meta name="keywords" content="心飞健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
+        <link rel="stylesheet" href="../css/style.css">
+    </head>
+    <body class="hold-transition">
+        <div id="app" class="page-wrap">
+            <h1 class="page-title">体检上传</h1>
 
-</body>
+            <!-- 上传卡片 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">体检报告导入</span>
+                </div>
+                <el-form :inline="true" size="small">
+                    <el-form-item label="选择会员">
+                        <el-select v-model="memberId" placeholder="请选择会员" style="width: 240px;" filterable>
+                            <el-option v-for="m in memberOptions" :key="m.id" :label="m.name + '（' + m.phoneNumber + '）'" :value="m.id"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-upload
+                            action="/examination/upload.do"
+                            name="excelFile"
+                            :show-file-list="false"
+                            :disabled="!memberId"
+                            :on-success="handleSuccess"
+                            :before-upload="beforeUpload">
+                            <el-button type="primary" icon="el-icon-upload2" :disabled="!memberId">上传体检数据文件</el-button>
+                        </el-upload>
+                    </el-form-item>
+                </el-form>
+                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">
+                    操作说明：先选择会员，再上传体检数据文件（xlsx 格式），上传成功后系统自动解析并生成检查结果。
+                </div>
+            </div>
+
+            <!-- 结果回显卡片 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">解析结果</span>
+                    <span class="list-total" v-if="resultList.length">共 {{ resultList.length }} 条</span>
+                </div>
+                <el-table size="small" :data="resultList" highlight-current-row>
+                    <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+                    <el-table-column prop="checkItemName" label="检查项目" align="left"></el-table-column>
+                    <el-table-column prop="result" label="检查结果" align="left"></el-table-column>
+                    <el-table-column prop="referenceRange" label="参考范围" align="left" width="180"></el-table-column>
+                    <el-table-column label="结论" align="center" width="100">
+                        <template slot-scope="scope">
+                            <el-tag :type="scope.row.normal ? 'success' : 'danger'" size="mini">{{ scope.row.normal ? '正常' : '异常' }}</el-tag>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <div v-if="!resultList.length" class="empty-tip">暂无解析结果，请先上传体检数据文件</div>
+            </div>
+        </div>
+
+        <!-- 引入组件库 -->
+        <script src="../js/vue.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script src="../js/axios-0.18.0.js"></script>
+        <script src="../js/config.js"></script>
+        <script src="../js/api.js"></script>
+        <script>
+            new Vue({
+                el: '#app',
+                data: {
+                    memberId: null,
+                    memberOptions: [],
+                    resultList: []
+                },
+                created() {
+                    this.loadMembers();
+                },
+                methods: {
+                    // 加载会员下拉选项（占位数据，接口见文档 07）
+                    loadMembers() {
+                        this.memberOptions = [
+                            { id: 1, name: '张三', phoneNumber: '13800000001' },
+                            { id: 2, name: '李四', phoneNumber: '13800000002' },
+                            { id: 3, name: '王五', phoneNumber: '13800000003' }
+                        ];
+                    },
+                    // 上传之前进行文件格式校验
+                    beforeUpload(file) {
+                        const isXLSX = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                            || file.name.endsWith('.xlsx');
+                        if (!isXLSX) {
+                            this.$message.error('上传文件只能是 xlsx 格式!');
+                        }
+                        return isXLSX;
+                    },
+                    // 上传成功后回显解析结果
+                    handleSuccess(response) {
+                        let r = XfjkApi.fromUpload(response);
+                        if (r.ok) {
+                            this.$message.success(r.text || '上传成功');
+                            this.resultList = Array.isArray(r.data) ? r.data : [];
+                        } else {
+                            this.$message.error(r.text || '上传失败');
+                        }
+                    }
+                }
+            })
+        </script>
+    </body>
 </html>

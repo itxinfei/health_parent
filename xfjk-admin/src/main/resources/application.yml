@@ -155,7 +155,9 @@ mybatis-encryptor:
 # api接口加密
 api-decrypt:
   # 是否开启全局接口加密
-  enabled: true
+  # false: CryptoFilter 不注册（ApiDecryptAutoConfiguration 的 @ConditionalOnProperty 不成立），
+  # 静态管理端 js/api.js 走明文 JSON。内网开发/测试环境；对外部署前需连同前端加密一起恢复。
+  enabled: false
   # AES 加密头标识
   headerFlag: encrypt-key
   # 响应加密公钥 非对称算法的公私钥 如：SM2，RSA 使用者请自行更换

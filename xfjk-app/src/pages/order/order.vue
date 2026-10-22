@@ -28,7 +28,8 @@ function submit() {
   })
     .then(() => {
       uni.showToast({ title: '预约成功', icon: 'success' })
-      setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1500)
+      // pages.json 未配置 tabBar，switchTab 会报 "can not switch to no-tabBar page"
+      setTimeout(() => uni.reLaunch({ url: '/pages/index/index' }), 1500)
     })
     .catch(() => {})
 }

@@ -1,67 +1,116 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- 页面meta -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>心飞健康</title>
+        <title>心飞健康 · 会员数量统计</title>
         <meta name="description" content="心飞健康">
         <meta name="keywords" content="心飞健康">
         <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-        <!-- 引入样式 -->
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
         <link rel="stylesheet" href="../css/style.css">
     </head>
     <body class="hold-transition">
-        <div id="app">
-            <div class="content-header">
-                <h1>统计分析<small>会员数量</small></h1>
-                <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
-                    <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-                    <el-breadcrumb-item>统计分析</el-breadcrumb-item>
-                    <el-breadcrumb-item>会员数量</el-breadcrumb-item>
-                </el-breadcrumb>
+        <div id="app" class="page-wrap">
+            <div class="report-header">
+                <h1 class="page-title" style="margin-bottom: 0;">会员数量统计</h1>
+                <span class="list-total">统计维度：近 12 个月每月新增会员数量</span>
             </div>
-            <div class="app-container">
-                <div class="box">
-                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
-                    <div id="chart1" style="height:600px;"></div>
+
+            <!-- 汇总卡片 -->
+            <div class="page-card">
+                <div class="stat-row">
+                    <div class="stat-cell">
+                        <div class="stat-label">总会员数</div>
+                        <div class="stat-value">{{ total }}</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-label">统计月份数</div>
+                        <div class="stat-value">{{ months.length }}</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-label">月均新增</div>
+                        <div class="stat-value">{{ average }}</div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- 图表卡 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">每月新增会员数量</span>
+                </div>
+                <div v-show="months.length" id="chart1" style="width: 100%; height: 400px;"></div>
+                <div v-show="!months.length" class="chart-empty">暂无统计数据</div>
             </div>
         </div>
     </body>
     <!-- 引入组件库 -->
-    <script src="../js/echarts.js"></script>
     <script src="../js/vue.js"></script>
+    <script src="../plugins/elementui/index.js"></script>
+    <script src="../js/echarts.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
     <script src="../js/axios-0.18.0.js"></script>
-    <script type="text/javascript">
-        // 基于准备好的dom，初始化echarts实例
-        let myChart1 = echarts.init(document.getElementById('chart1'));
-
-        // 使用刚指定的配置项和数据显示图表。
-        //myChart.setOption(option);
-
-        axios.get("/report/getMemberReport.do").then((response)=>{
-            myChart1.setOption(
-                                {
-                                    title: {
-                                        text: '会员数量'
-                                    },
-                                    tooltip: {},
-                                    legend: {
-                                        data:['会员数量']
-                                    },
-                                    xAxis: {
-                                        data: response.data.months
-                                    },
-                                    yAxis: {
-                                        type:'value'
-                                    },
-                                    series: [{
-                                        name: '会员数量',
-                                        type: 'line',
-                                        data: response.data.memberCount
-                                    }]
-                                });
-        });
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        let vue = new Vue({
+            el: '#app',
+            data: {
+                months: [],
+                counts: [],
+                total: 0
+            },
+            computed: {
+                average() {
+                    return this.counts.length ? Math.round(this.total / this.counts.length) : 0;
+                }
+            },
+            created() {
+                axios.get("/report/getMemberReport.do").then((response) => {
+                    // 接口未返回数据时保持空数组，避免读 null 属性让整页崩掉
+                    let report = response.data || {};
+                    this.months = report.months || [];
+                    this.counts = report.memberCount || [];
+                    this.total = this.counts.reduce((a, b) => a + Number(b), 0);
+                    // 图表容器由 v-show 控制，需等 DOM 更新后才有宽度
+                    this.$nextTick(this.renderChart);
+                });
+            },
+            methods: {
+                renderChart() {
+                    let el = document.getElementById('chart1');
+                    if (!el || !this.months.length) return;
+                    let chart = echarts.init(el);
+                    chart.setOption({
+                        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                        grid: { left: 48, right: 24, top: 24, bottom: 40 },
+                        xAxis: {
+                            type: 'category',
+                            data: this.months,
+                            axisLine: { lineStyle: { color: '#e5e6eb' } },
+                            axisLabel: { color: '#86909c', fontSize: 12 },
+                            axisTick: { show: false }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            axisLine: { show: false },
+                            axisLabel: { color: '#86909c', fontSize: 12 },
+                            splitLine: { lineStyle: { color: '#f2f3f5' } }
+                        },
+                        series: [{
+                            name: '新增会员数',
+                            type: 'bar',
+                            barMaxWidth: 36,
+                            data: this.counts,
+                            itemStyle: { color: '#00A870', borderRadius: [4, 4, 0, 0] }
+                        }]
+                    });
+                    window.addEventListener('resize', () => chart.resize());
+                }
+            }
+        })
     </script>
 </html>

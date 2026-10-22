@@ -1,82 +1,98 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- 页面meta -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>心飞健康</title>
+        <title>心飞健康 · 套餐占比统计</title>
         <meta name="description" content="心飞健康">
         <meta name="keywords" content="心飞健康">
         <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-        <!-- 引入样式 -->
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
         <link rel="stylesheet" href="../css/style.css">
     </head>
     <body class="hold-transition">
-        <div id="app">
-            <div class="content-header">
-                <h1>统计分析<small>套餐占比</small></h1>
-                <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
-                    <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-                    <el-breadcrumb-item>统计分析</el-breadcrumb-item>
-                    <el-breadcrumb-item>套餐占比</el-breadcrumb-item>
-                </el-breadcrumb>
+        <div id="app" class="page-wrap">
+            <div class="report-header">
+                <h1 class="page-title" style="margin-bottom: 0;">套餐占比统计</h1>
+                <span class="list-total">统计维度：各体检套餐预约数量占比</span>
             </div>
-            <div class="app-container">
-                <div class="box">
-                    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
-                    <div id="chart1" style="height:600px;"></div>
+
+            <!-- 图表卡 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">套餐预约占比</span>
                 </div>
+                <div v-show="setmealList.length" id="chart1" style="width: 100%; height: 420px;"></div>
+                <div v-show="!setmealList.length" class="chart-empty">暂无统计数据</div>
+            </div>
+
+            <!-- 明细卡 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">预约明细</span>
+                </div>
+                <el-table size="small" :data="setmealList" highlight-current-row>
+                    <el-table-column type="index" label="排名" width="60" align="center"></el-table-column>
+                    <el-table-column prop="name" label="套餐名称" align="left" show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="value" label="预约数量" align="right" width="120" class-name="num"></el-table-column>
+                    <el-table-column prop="percent" label="占比" align="right" width="120" class-name="num"></el-table-column>
+                </el-table>
             </div>
         </div>
     </body>
     <!-- 引入组件库 -->
-    <script src="../js/echarts.js"></script>
     <script src="../js/vue.js"></script>
+    <script src="../plugins/elementui/index.js"></script>
+    <script src="../js/echarts.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
     <script src="../js/axios-0.18.0.js"></script>
-    <script type="text/javascript">
-        // 基于准备好的dom，初始化echarts实例
-        var myChart1 = echarts.init(document.getElementById('chart1'));
-
-        // 使用刚指定的配置项和数据显示图表。
-        //myChart.setOption(option);
-
-        axios.get("/report/getSetmealReport.do").then((response)=>{
-            let totalCount = [];
-            for (let i = 0; i < response.data.setmealCount.length; i++) {
-                totalCount.push({value:response.data.setmealCount[i],name:response.data.setmealNames[i]})
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        // 品牌绿主色系（由深到浅）用于饼图区分
+        let brandPalette = ['#00A870', '#33b98d', '#66cbaa', '#99dcc6', '#cceee2', '#86909c'];
+        let vue = new Vue({
+            el: '#app',
+            data: {
+                setmealList: []
+            },
+            created() {
+                axios.get("/report/getSetmealReport.do").then((response) => {
+                    // 接口未返回数据时用空数组兜底，避免读 null 让整页崩掉
+                    let data = Array.isArray(response.data) ? response.data : [];
+                    let total = data.reduce((a, b) => a + Number(b.value), 0) || 1;
+                    this.setmealList = data.map(item => Object.assign({}, item, {
+                        percent: (item.value * 100 / total).toFixed(1) + '%'
+                    }));
+                    // 图表容器由 v-show 控制，需等 DOM 更新后才有宽度
+                    this.$nextTick(this.renderChart);
+                });
+            },
+            methods: {
+                renderChart() {
+                    let el = document.getElementById('chart1');
+                    if (!el || !this.setmealList.length) return;
+                    let chart = echarts.init(el);
+                    chart.setOption({
+                        tooltip: { trigger: 'item', formatter: '{b}<br/>预约 {c} 单（{d}%）' },
+                        legend: { bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { color: '#4e5969', fontSize: 12 } },
+                        color: brandPalette,
+                        series: [{
+                            name: '套餐占比',
+                            type: 'pie',
+                            radius: ['42%', '68%'],
+                            center: ['50%', '45%'],
+                            avoidLabelOverlap: true,
+                            itemStyle: { borderColor: '#fff', borderWidth: 2 },
+                            label: { show: false },
+                            data: this.setmealList
+                        }]
+                    });
+                    window.addEventListener('resize', () => chart.resize());
+                }
             }
-            myChart1.setOption({
-                                    title : {
-                                        text: '套餐预约占比',
-                                        subtext: '',
-                                        x:'center'
-                                    },
-                                    tooltip : {//提示框组件
-                                        trigger: 'item',//触发类型，在饼形图中为item
-                                        formatter: "{a} <br/>{b} : {c} ({d}%)"//提示内容格式
-                                    },
-                                    legend: {
-                                        orient: 'vertical',
-                                        left: 'left',
-                                        data: response.data.setmealNames
-                                    },
-                                    series : [
-                                        {
-                                            name: '套餐预约占比',
-                                            type: 'pie',
-                                            radius : '55%',
-                                            center: ['50%', '60%'],
-                                            data:totalCount,
-                                            itemStyle: {
-                                                emphasis: {
-                                                    shadowBlur: 10,
-                                                    shadowOffsetX: 0,
-                                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                                }
-                                            }
-                                        }
-                                    ]
-                                });
-        });
+        })
     </script>
 </html>

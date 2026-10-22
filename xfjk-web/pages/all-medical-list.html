@@ -1,10 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>工作量统计</h1>
-</body>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>心飞健康 · 中医体质辨识</title>
+        <meta name="description" content="心飞健康">
+        <meta name="keywords" content="心飞健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
+        <link rel="stylesheet" href="../css/style.css">
+    </head>
+    <body class="hold-transition">
+        <div id="app" class="page-wrap">
+            <div class="report-header">
+                <h1 class="page-title" style="margin-bottom: 0;">中医体质辨识</h1>
+                <span class="list-total">统计维度：会员体质类型分布（占位数据）</span>
+            </div>
+
+            <!-- 图表卡 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">体质分布</span>
+                </div>
+                <div id="constitutionChart" style="width: 100%; height: 400px;"></div>
+            </div>
+
+            <!-- 明细表 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">辨识记录</span>
+                </div>
+                <el-table size="small" :data="recordList" highlight-current-row>
+                    <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+                    <el-table-column prop="memberName" label="会员姓名" align="left"></el-table-column>
+                    <el-table-column prop="constitution" label="体质类型" align="left" width="140"></el-table-column>
+                    <el-table-column prop="score" label="转化分数" align="right" width="100" class-name="num"></el-table-column>
+                    <el-table-column prop="resultDate" label="辨识日期" align="center" width="120"></el-table-column>
+                    <el-table-column prop="advice" label="调理建议" align="left" show-overflow-tooltip></el-table-column>
+                </el-table>
+                <div class="empty-tip">占位数据：后端健康评估接口就绪后展示真实辨识记录（文档 09）</div>
+            </div>
+        </div>
+    </body>
+    <!-- 引入组件库 -->
+    <script src="../js/vue.js"></script>
+    <script src="../plugins/elementui/index.js"></script>
+    <script src="../js/echarts.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script src="../js/axios-0.18.0.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        let brandPalette = ['#00A870', '#33b98d', '#66cbaa', '#99dcc6', '#cceee2', '#f2c94c', '#86909c'];
+        let vue = new Vue({
+            el: '#app',
+            data: {
+                constitutionList: [
+                    { name: '平和质', value: 120 },
+                    { name: '气虚质', value: 58 },
+                    { name: '阳虚质', value: 42 },
+                    { name: '阴虚质', value: 36 },
+                    { name: '痰湿质', value: 30 },
+                    { name: '湿热质', value: 22 },
+                    { name: '其他', value: 15 }
+                ],
+                recordList: [
+                    { memberName: '张三', constitution: '平和质', score: 78, resultDate: '2026-10-10', advice: '保持规律作息与均衡饮食' },
+                    { memberName: '李四', constitution: '气虚质', score: 62, resultDate: '2026-10-12', advice: '适度有氧运动，避免过劳' }
+                ]
+            },
+            created() {
+                this.renderChart();
+            },
+            methods: {
+                renderChart() {
+                    let chart = echarts.init(document.getElementById('constitutionChart'));
+                    chart.setOption({
+                        tooltip: { trigger: 'item', formatter: '{b}<br/>{c} 人（{d}%）' },
+                        legend: { bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { color: '#4e5969', fontSize: 12 } },
+                        color: brandPalette,
+                        series: [{
+                            name: '体质分布',
+                            type: 'pie',
+                            radius: ['42%', '68%'],
+                            center: ['50%', '45%'],
+                            itemStyle: { borderColor: '#fff', borderWidth: 2 },
+                            label: { show: false },
+                            data: this.constitutionList
+                        }]
+                    });
+                    window.addEventListener('resize', () => chart.resize());
+                }
+            }
+        })
+    </script>
 </html>

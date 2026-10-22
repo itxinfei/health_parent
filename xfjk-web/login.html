@@ -1,46 +1,199 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- 页面meta -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>心飞健康</title>
+        <title>心飞健康 · 登录</title>
         <meta name="description" content="心飞健康">
         <meta name="keywords" content="心飞健康">
         <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-        <!-- 引入样式 -->
         <link rel="stylesheet" href="plugins/elementui/index.css">
-        <link rel="stylesheet" href="css/login.css">
+        <link rel="stylesheet" href="css/tokens.css">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+                min-height: 100vh;
+                display: flex;
+            }
+            /* #app 是 body 的唯一子元素，必须自己再开一层 flex，否则左右分栏不生效 */
+            #app.login-shell {
+                display: flex;
+                width: 100%;
+                min-height: 100vh;
+            }
+            /* 左侧品牌区 */
+            .brand-side {
+                flex: 1.2;
+                background: var(--brand-gradient, linear-gradient(135deg, #00a870 0%, #33b98d 100%));
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: var(--space-8);
+                color: #fff;
+            }
+            .brand-side .brand-logo { width: 72px; height: 72px; }
+            .brand-side .brand-name { font-size: 36px; font-weight: 700; margin-top: 16px; }
+            .brand-side .brand-slogan { font-size: 15px; opacity: .85; margin-top: 8px; letter-spacing: 2px; }
+            /* 右侧表单区 */
+            .login-side {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bg-page);
+            }
+            .login-card {
+                width: 400px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-base);
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-card);
+                padding: 32px;
+            }
+            .login-card h2 { font-size: 20px; color: var(--text-title); margin-bottom: 24px; }
+            .login-card input {
+                width: 100%;
+                height: 44px;
+                padding: 0 12px;
+                margin-bottom: 16px;
+                border: 1px solid var(--border-base);
+                border-radius: var(--radius-sm);
+                font-size: 14px;
+                color: var(--text-body);
+                outline: none;
+            }
+            .login-card input:focus { border-color: var(--brand-primary); }
+            .login-card button {
+                width: 100%;
+                height: 44px;
+                background: var(--brand-primary);
+                color: #fff;
+                border: none;
+                border-radius: var(--radius-sm);
+                font-size: 15px;
+                cursor: pointer;
+            }
+            .login-card button:hover { background: #33b98d; }
+            @media (max-width: 720px) {
+                .brand-side { display: none; }
+            }
+            .login-card .field-error {
+                margin: -8px 0 16px;
+                font-size: 13px;
+                color: var(--status-danger);
+                min-height: 18px;
+            }
+            .login-card button:disabled { opacity: .6; cursor: not-allowed; }
+            /* 验证码行：输入框 + 图片并排，点图片刷新 */
+            .captcha-row { display: flex; gap: 12px; margin-bottom: 16px; }
+            .captcha-row input { flex: 1; width: auto; margin-bottom: 0; }
+            .captcha-row img {
+                width: 120px;
+                height: 44px;
+                border: 1px solid var(--border-base);
+                border-radius: var(--radius-sm);
+                cursor: pointer;
+                background: var(--bg-card);
+            }
+        </style>
     </head>
-    <body class="hold-transition skin-purple sidebar-mini">
-        <div id="app">
-            <div class="login-container">
-                <div class="loginBox">
-                  <form method="post" class="login-form" action="/login.do" label-position="left">
-                      <div class="title-container">
-                        <div class="logoInfo clearfix">
-                          <em class="logo"></em>
-                        </div>
-                      </div>
-                      <div>
-                        <span class="svg-container svg-container_login">
-                          <span class="user"></span>
-                        </span>
-                        <input type="text" name="username" placeholder="请输入用户名" />
-                      </div>
-                      <div>
-                        <span class="svg-container">
-                          <span class="username"></span>
-                        </span>
-                        <input type="password" name="password" placeholder="请输入密码"/>
-                      </div>
-                      <input type="submit" style="width:100%;margin-bottom:30px;" value="登录"></input>
+    <body>
+        <div id="app" class="login-shell">
+            <!-- 左侧品牌区 -->
+            <div class="brand-side">
+                <img class="brand-logo" src="img/logo.svg" alt="心飞健康">
+                <div class="brand-name">心飞健康</div>
+                <div class="brand-slogan">XINFEI HEALTH · 让健康管理更简单</div>
+            </div>
+            <!-- 右侧登录表单 -->
+            <div class="login-side">
+                <form class="login-card" @submit.prevent="doLogin">
+                    <h2>登录管理系统</h2>
+                    <input v-model.trim="username" type="text" placeholder="请输入用户名" autocomplete="username" />
+                    <input v-model="password" type="password" placeholder="请输入密码" autocomplete="current-password" @keyup.enter="doLogin" />
+                    <div v-if="captchaEnabled" class="captcha-row">
+                        <input v-model.trim="code" type="text" placeholder="请输入验证码" maxlength="6" @keyup.enter="doLogin" />
+                        <img v-if="captchaImg" :src="'data:image/png;base64,' + captchaImg" alt="验证码" title="点击刷新" @click="loadCaptcha" />
+                    </div>
+                    <div class="field-error">{{ error }}</div>
+                    <button type="submit" :disabled="loading">{{ loading ? '登录中…' : '登 录' }}</button>
                 </form>
-                </div>
-              </div>
+            </div>
         </div>
+        <script src="js/vue.js"></script>
+        <script src="plugins/elementui/index.js"></script>
+        <script src="js/axios-0.18.0.js"></script>
+        <script src="js/config.js"></script>
+        <script src="js/api.js"></script>
+        <script>
+            new Vue({
+                el: '#app',
+                data: {
+                    username: '',
+                    password: '',
+                    code: '',
+                    uuid: '',
+                    captchaEnabled: false,
+                    captchaImg: '',
+                    error: '',
+                    loading: false
+                },
+                created() {
+                    this.loadCaptcha();
+                },
+                methods: {
+                    loadCaptcha() {
+                        axios.get('/auth/code').then(response => {
+                            let data = response.data || {};
+                            this.captchaEnabled = !!data.captchaEnabled;
+                            this.captchaImg = data.img || '';
+                            this.uuid = data.uuid || '';
+                            this.code = '';
+                        }).catch(() => {
+                            this.captchaEnabled = false;
+                        });
+                    },
+                    doLogin() {
+                        if (!this.username || !this.password) {
+                            this.error = '请输入用户名和密码';
+                            return;
+                        }
+                        if (this.captchaEnabled && !this.code) {
+                            this.error = '请输入验证码';
+                            return;
+                        }
+                        this.loading = true;
+                        this.error = '';
+                        // 后端登录入口是 POST /auth/login（JSON），不是旧站的 /login.do
+                        axios.post('/auth/login', {
+                            clientId: XfjkConfig.clientId,
+                            grantType: 'password',
+                            username: this.username,
+                            password: this.password,
+                            code: this.code,
+                            uuid: this.uuid
+                        }, {
+                            headers: { 'ClientID': XfjkConfig.clientId }
+                        }).then(response => {
+                            let data = response.data || {};
+                            if (!data.access_token) {
+                                this.error = '登录响应缺少访问令牌';
+                                this.loadCaptcha();
+                                return;
+                            }
+                            XfjkAuth.signin(data.access_token, this.username);
+                            window.location.href = (window.XfjkConfig && window.XfjkConfig.homePage) || '/pages/index.html';
+                        }).catch(err => {
+                            this.error = (err && err.message) || '登录失败';
+                            // 验证码是一次性的，失败后必须换一张
+                            this.loadCaptcha();
+                        }).finally(() => {
+                            this.loading = false;
+                        });
+                    }
+                }
+            })
+        </script>
     </body>
-    <!-- 引入组件库 -->
-    <script src="js/vue.js"></script>
-    <script src="plugins/elementui/index.js"></script>
 </html>

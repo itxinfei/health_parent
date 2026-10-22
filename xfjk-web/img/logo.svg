@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="96" viewBox="0 0 360 96">
+  <defs>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E90FF"/>
+      <stop offset="100%" stop-color="#0B5FCC"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E90FF"/>
+      <stop offset="100%" stop-color="#0B5FCC"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 心形标志：心形 + 向右上的飞翼 -->
+  <g>
+    <path d="M44 78 C24 62 12 50 12 35 C12 23 21 14 33 14 C38 14 42 16 44 19 C46 16 50 14 55 14 C67 14 76 23 76 35 C76 50 64 62 44 78 Z"
+          fill="url(#heartGrad)"/>
+    <!-- 飞翼：三道向右上扬起的弧线 -->
+    <path d="M30 34 C38 30 52 30 60 36" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M34 44 C40 40 50 40 56 45" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <path d="M38 54 C42 51 48 51 52 54" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- 品牌文字：心飞健康 -->
+  <text x="96" y="62" font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="40" font-weight="bold" fill="url(#textGrad)">心飞健康</text>
+
+  <!-- 英文副标 -->
+  <text x="98" y="84" font-family="Arial,sans-serif" font-size="14" letter-spacing="4"
+        fill="#7FA8D9">XINFEI HEALTH</text>
+</svg>

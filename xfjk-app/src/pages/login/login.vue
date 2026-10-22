@@ -17,8 +17,15 @@ function doLogin() {
     data: { phone: phone.value, password: password.value },
   })
     .then((res) => {
-      uni.setStorageSync('token', res.data.token)
-      uni.switchTab({ url: '/pages/index/index' })
+      // 后端 LoginVo 用 access_token，自定义会员接口可能用 token，两者都兼容
+      const token = (res.data as { token?: string; access_token?: string }).access_token ?? res.data.token
+      if (!token) {
+        uni.showToast({ title: '登录响应缺少令牌', icon: 'none' })
+        return
+      }
+      uni.setStorageSync('token', token)
+      // pages.json 未配置 tabBar，switchTab 会报 "can not switch to no-tabBar page"
+      uni.reLaunch({ url: '/pages/index/index' })
     })
     .catch(() => {})
 }

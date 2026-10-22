@@ -580,3 +580,24 @@ label input[type="radio"]:checked {
 	height: 277px;
 	overflow-y:scroll; ;
 }
+
+/* 空状态提示：内置 ElementUI 无 el-empty 组件，用普通元素代替 */
+.empty-tip{
+	padding: 24px 12px;
+	text-align: center;
+	font-size: var(--font-size-sm);
+	color: var(--text-secondary);
+	background: var(--bg-card);
+	border: 1px dashed var(--border-base);
+	border-radius: var(--radius-md);
+}
+
+/* 图表无数据时的占位，避免整块空白 */
+.chart-empty{
+	height: 400px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--font-size-sm);
+	color: var(--text-disabled);
+}
