@@ -4,6 +4,9 @@
   /* 品牌主色（只用于主按钮/选中态/链接/关键数据） */
   --brand-primary: #00A870;
   --brand-primary-light: #e6f7f1;
+  /* 品牌渐变：登录页左侧、主按钮等大面积用 */
+  --brand-gradient: linear-gradient(135deg, #00A870 0%, #33b98d 100%);
+  --brand-gradient-deep: linear-gradient(160deg, #00714d 0%, #00A870 55%, #33b98d 100%);
 
   /* 文字 */
   --text-title: #1f2329;
@@ -43,7 +46,10 @@
   /* 圆角/阴影 */
   --radius-sm: 4px;
   --radius-md: 8px;
+  --radius-lg: 12px;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, .03);
+  /* 浮层：登录卡等需要脱离页面底色的独立容器 */
+  --shadow-float: 0 18px 48px rgba(0, 61, 41, .18);
 }
 
 /* 全局基础：字体、背景、文字 */
