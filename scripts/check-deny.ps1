@@ -78,7 +78,7 @@ $rules = @(
     @{ Name = 'DENY-009'; Pattern = '@PreAuthorize'; Ext = @('.java'); Severity = 'ERROR'; Message = '本项目用 Sa-Token，禁止 @PreAuthorize' }
     @{ Name = 'DENY-010'; Pattern = '@Scheduled'; Ext = @('.java'); Severity = 'ERROR'; Message = '定时任务用 SnailJob，禁止 @Scheduled' }
     @{ Name = 'DENY-011'; Pattern = '\borg\.dromara\b'; Ext = @('.java', '.xml'); Severity = 'ERROR'; Message = '包名应整体改为 com.xinfei，禁止 org.dromara 残留' }
-    @{ Name = 'DENY-012'; Pattern = '<artifactId>\s*ruoyi-'; Ext = @('.xml'); Severity = 'WARN'; Message = 'artifact 前缀应为 xinfei-，检查 ruoyi- 残留' }
+    @{ Name = 'DENY-012'; Pattern = '<artifactId>\s*ruoyi-'; Ext = @('.xml'); Severity = 'WARN'; Message = 'artifact 前缀应为 xfjk-，检查 ruoyi- 残留' }
     @{ Name = 'DENY-013'; Pattern = '\bconsole\.(log|debug|info)\s*\('; Ext = @('.ts', '.vue', '.js'); Severity = 'WARN'; Message = '生产代码避免 console 输出' }
     @{ Name = 'DENY-014'; Pattern = '(?i)@CrossOrigin'; Ext = @('.java'); Severity = 'WARN'; Message = '统一走全局 CORS 配置，避免 @CrossOrigin 散落' }
 )

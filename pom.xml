@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.xinfei</groupId>
-    <artifactId>xinfei-vue-plus</artifactId>
+    <artifactId>xfjk-vue-plus</artifactId>
     <version>${revision}</version>
 
     <name>心飞健康管理系统（基于 RuoYi-Vue-Plus 5.6.2）</name>
@@ -119,7 +119,7 @@
             <!-- common 的依赖配置-->
             <dependency>
                 <groupId>com.xinfei</groupId>
-                <artifactId>xinfei-common-bom</artifactId>
+                <artifactId>xfjk-common-bom</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -320,25 +320,25 @@
 
             <dependency>
                 <groupId>com.xinfei</groupId>
-                <artifactId>xinfei-system</artifactId>
+                <artifactId>xfjk-system</artifactId>
                 <version>${revision}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.xinfei</groupId>
-                <artifactId>xinfei-job</artifactId>
+                <artifactId>xfjk-job</artifactId>
                 <version>${revision}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.xinfei</groupId>
-                <artifactId>xinfei-generator</artifactId>
+                <artifactId>xfjk-generator</artifactId>
                 <version>${revision}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.xinfei</groupId>
-                <artifactId>xinfei-demo</artifactId>
+                <artifactId>xfjk-demo</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -346,10 +346,10 @@
     </dependencyManagement>
 
     <modules>
-        <module>xinfei-admin</module>
-        <module>xinfei-common</module>
-        <module>xinfei-extend</module>
-        <module>xinfei-modules</module>
+        <module>xfjk-admin</module>
+        <module>xfjk-common</module>
+        <module>xfjk-extend</module>
+        <module>xfjk-modules</module>
     </modules>
     <packaging>pom</packaging>
 

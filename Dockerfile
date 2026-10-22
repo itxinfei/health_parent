@@ -8,15 +8,15 @@ COPY --from=maven-tools /usr/share/maven /usr/share/maven
 ENV PATH="/usr/share/maven/bin:${PATH}"
 WORKDIR /build
 COPY pom.xml ./
-COPY xinfei-common ./xinfei-common
-COPY xinfei-modules ./xinfei-modules
-COPY xinfei-extend ./xinfei-extend
-COPY xinfei-admin ./xinfei-admin
-RUN mvn -q -B clean package -DskipTests -pl xinfei-admin -am
+COPY xfjk-common ./xfjk-common
+COPY xfjk-modules ./xfjk-modules
+COPY xfjk-extend ./xfjk-extend
+COPY xfjk-admin ./xfjk-admin
+RUN mvn -q -B clean package -DskipTests -pl xfjk-admin -am
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app
-COPY --from=build /build/xinfei-admin/target/*.jar app.jar
+COPY --from=build /build/xfjk-admin/target/*.jar app.jar
 ENV TZ=Asia/Shanghai JAVA_OPTS=""
 EXPOSE 8180
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

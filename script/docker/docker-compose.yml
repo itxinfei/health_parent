@@ -98,9 +98,9 @@ services:
     privileged: true
     network_mode: "host"
 
-  xinfei-server1:
-    image: xinfei/xinfei-server:5.6.2
-    container_name: xinfei-server1
+  xfjk-server1:
+    image: xinfei/xfjk-server:5.6.2
+    container_name: xfjk-server1
     environment:
       # 时区上海
       TZ: Asia/Shanghai
@@ -114,9 +114,9 @@ services:
     privileged: true
     network_mode: "host"
 
-  xinfei-server2:
-    image: xinfei/xinfei-server:5.6.2
-    container_name: xinfei-server2
+  xfjk-server2:
+    image: xinfei/xfjk-server:5.6.2
+    container_name: xfjk-server2
     environment:
       # 时区上海
       TZ: Asia/Shanghai
@@ -130,9 +130,9 @@ services:
     privileged: true
     network_mode: "host"
 
-  xinfei-monitor-admin:
-    image: xinfei/xinfei-monitor-admin:5.6.2
-    container_name: xinfei-monitor-admin
+  xfjk-monitor-admin:
+    image: xinfei/xfjk-monitor-admin:5.6.2
+    container_name: xfjk-monitor-admin
     environment:
       # 时区上海
       TZ: Asia/Shanghai
@@ -142,9 +142,9 @@ services:
     privileged: true
     network_mode: "host"
 
-  xinfei-snailjob-server:
-    image: xinfei/xinfei-snailjob-server:5.6.2
-    container_name: xinfei-snailjob-server
+  xfjk-snailjob-server:
+    image: xinfei/xfjk-snailjob-server:5.6.2
+    container_name: xfjk-snailjob-server
     environment:
       # 时区上海
       TZ: Asia/Shanghai

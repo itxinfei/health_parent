@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>xfjk-vue-plus</artifactId>
+        <groupId>com.xinfei</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>xfjk-common-bom</module>
+        <module>xfjk-common-social</module>
+        <module>xfjk-common-core</module>
+        <module>xfjk-common-doc</module>
+        <module>xfjk-common-excel</module>
+        <module>xfjk-common-idempotent</module>
+        <module>xfjk-common-job</module>
+        <module>xfjk-common-log</module>
+        <module>xfjk-common-mail</module>
+        <module>xfjk-common-mybatis</module>
+        <module>xfjk-common-oss</module>
+        <module>xfjk-common-ratelimiter</module>
+        <module>xfjk-common-redis</module>
+        <module>xfjk-common-satoken</module>
+        <module>xfjk-common-security</module>
+        <module>xfjk-common-sms</module>
+        <module>xfjk-common-web</module>
+        <module>xfjk-common-translation</module>
+        <module>xfjk-common-sensitive</module>
+        <module>xfjk-common-json</module>
+        <module>xfjk-common-encrypt</module>
+        <module>xfjk-common-tenant</module>
+        <module>xfjk-common-websocket</module>
+        <module>xfjk-common-sse</module>
+    </modules>
+
+    <artifactId>xfjk-common</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        common 通用模块
+    </description>
+
+</project>
