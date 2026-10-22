@@ -8,9 +8,9 @@
     <artifactId>xfjk-vue-plus</artifactId>
     <version>${revision}</version>
 
-    <name>心飞健康管理系统（基于 RuoYi-Vue-Plus 5.6.2）</name>
+    <name>心飞健康管理系统（底座 RuoYi-Vue-Plus 5.6.2，已升级 Spring Boot 4.1.1 / JDK 25）</name>
     <url>https://gitee.com/itxinfei/health_parent</url>
-    <description>心飞健康 · 完整健康管理平台后端，基于 RuoYi-Vue-Plus 5.6.2</description>
+    <description>心飞健康 · 完整健康管理平台后端，底座 RuoYi-Vue-Plus 5.6.2，本项目已升级 Spring Boot 4.1.1 / JDK 25（决策记录见 docs/requirements/17 决策 20）</description>
 
     <properties>
         <revision>5.6.2</revision>
