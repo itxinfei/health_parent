@@ -1,165 +1,147 @@
 <template>
   <div class="app-container home">
-    <el-row :gutter="20">
-      <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>RuoYi-Vue-Plus多租户管理系统</h2>
-        <p>
-          RuoYi-Vue-Plus 是基于 RuoYi-Vue 针对 分布式集群 场景升级(不兼容原框架)
-          <br />
-          * 前端开发框架 Vue3、TS、Element Plus<br />
-          * 后端开发框架 Spring Boot<br />
-          * 容器框架 Undertow 基于 Netty 的高性能容器<br />
-          * 权限认证框架 Sa-Token 支持多终端认证系统<br />
-          * 关系数据库 MySQL 适配 8.X 最低 5.7<br />
-          * 缓存数据库 Redis 适配 6.X 最低 4.X<br />
-          * 数据库框架 Mybatis-Plus 快速 CRUD 增加开发效率<br />
-          * 数据库框架 p6spy 更强劲的 SQL 分析<br />
-          * 多数据源框架 dynamic-datasource 支持主从与多种类数据库异构<br />
-          * 序列化框架 Jackson 统一使用 jackson 高效可靠<br />
-          * Redis客户端 Redisson 性能强劲、API丰富<br />
-          * 分布式限流 Redisson 全局、请求IP、集群ID 多种限流<br />
-          * 分布式锁 Lock4j 注解锁、工具锁 多种多样<br />
-          * 分布式幂等 Lock4j 基于分布式锁实现<br />
-          * 分布式链路追踪 SkyWalking 支持链路追踪、网格分析、度量聚合、可视化<br />
-          * 分布式任务调度 SnailJob 高性能 高可靠 易扩展<br />
-          * 文件存储 Minio 本地存储<br />
-          * 文件存储 七牛、阿里、腾讯 云存储<br />
-          * 监控框架 SpringBoot-Admin 全方位服务监控<br />
-          * 校验框架 Validation 增强接口安全性 严谨性<br />
-          * Excel框架 FastExcel(原Alibaba EasyExcel) 性能优异 扩展性强<br />
-          * 文档框架 SpringDoc、javadoc 无注解零入侵基于java注释<br />
-          * 工具类框架 Hutool、Lombok 减少代码冗余 增加安全性<br />
-          * 代码生成器 适配MP、SpringDoc规范化代码 一键生成前后端代码<br />
-          * 部署方式 Docker 容器编排 一键部署业务集群<br />
-          * 国际化 SpringMessage Spring标准国际化方案<br />
-        </p>
-        <p><b>当前版本:</b> <span>v5.6.2</span></p>
-        <p>
-          <el-tag type="danger">&yen;免费开源</el-tag>
-        </p>
-        <p>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://gitee.com/dromara/RuoYi-Vue-Plus')">访问码云</el-button>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://github.com/dromara/RuoYi-Vue-Plus')">访问GitHub</el-button>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://plus-doc.dromara.org/#/ruoyi-vue-plus/changlog')"
-            >更新日志</el-button
-          >
-        </p>
-      </el-col>
+    <section class="hero">
+      <div class="hero-main">
+        <h1>{{ title }}</h1>
+        <p class="hero-desc">面向机构客户的健康管理系统，覆盖检查预约、套餐配置、评估与干预随访全流程。</p>
+      </div>
+      <el-icon class="hero-icon" :size="56"><FirstAidKit /></el-icon>
+    </section>
 
-      <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>RuoYi-Cloud-Plus多租户微服务管理系统</h2>
-        <p>
-          RuoYi-Cloud-Plus 微服务通用权限管理系统 重写 RuoYi-Cloud 全方位升级(不兼容原框架)
-          <br />
-          * 前端开发框架 Vue3、TS、Element UI<br />
-          * 后端开发框架 Spring Boot<br />
-          * 微服务开发框架 Spring Cloud、Spring Cloud Alibaba<br />
-          * 容器框架 Undertow 基于 XNIO 的高性能容器<br />
-          * 权限认证框架 Sa-Token、Jwt 支持多终端认证系统<br />
-          * 关系数据库 MySQL 适配 8.X 最低 5.7<br />
-          * 关系数据库 Oracle 适配 11g 12c<br />
-          * 关系数据库 PostgreSQL 适配 13 14<br />
-          * 关系数据库 SQLServer 适配 2017 2019<br />
-          * 缓存数据库 Redis 适配 6.X 最低 5.X<br />
-          * 分布式注册中心 Alibaba Nacos 采用2.X 基于GRPC通信高性能<br />
-          * 分布式配置中心 Alibaba Nacos 采用2.X 基于GRPC通信高性能<br />
-          * 服务网关 Spring Cloud Gateway 响应式高性能网关<br />
-          * 负载均衡 Spring Cloud Loadbalancer 负载均衡处理<br />
-          * RPC远程调用 Apache Dubbo 原生态使用体验、高性能<br />
-          * 分布式限流熔断 Alibaba Sentinel 无侵入、高扩展<br />
-          * 分布式事务 Alibaba Seata 无侵入、高扩展 支持 四种模式<br />
-          * 分布式消息队列 Apache Kafka 高性能高速度<br />
-          * 分布式消息队列 Apache RocketMQ 高可用功能多样<br />
-          * 分布式消息队列 RabbitMQ 支持各种扩展插件功能多样性<br />
-          * 分布式搜索引擎 ElasticSearch 业界知名<br />
-          * 分布式链路追踪 Apache SkyWalking 链路追踪、网格分析、度量聚合、可视化<br />
-          * 分布式日志中心 ELK 业界成熟解决方案<br />
-          * 分布式监控 Prometheus、Grafana 全方位性能监控<br />
-          * 其余与 Vue 版本一致<br />
-        </p>
-        <p><b>当前版本:</b> <span>v2.6.2</span></p>
-        <p>
-          <el-tag type="danger">&yen;免费开源</el-tag>
-        </p>
-        <p>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://gitee.com/dromara/RuoYi-Cloud-Plus')">访问码云</el-button>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://github.com/dromara/RuoYi-Cloud-Plus')">访问GitHub</el-button>
-          <el-button type="primary" icon="Cloudy" plain @click="goTarget('https://plus-doc.dromara.org/#/ruoyi-cloud-plus/changlog')"
-            >更新日志</el-button
-          >
-        </p>
+    <h2 class="block-title">业务管理</h2>
+    <el-row :gutter="16">
+      <el-col v-for="card in liveCards" :key="card.path" :xs="24" :sm="12" :md="8">
+        <el-card shadow="hover" class="entry-card" @click="go(card.path)">
+          <div class="entry-head">
+            <el-icon :size="22"><component :is="card.icon" /></el-icon>
+            <span class="entry-name">{{ card.name }}</span>
+          </div>
+          <p class="entry-desc">{{ card.desc }}</p>
+          <el-tag size="small" type="success" effect="light">已上线</el-tag>
+        </el-card>
       </el-col>
     </el-row>
-    <el-divider />
+
+    <h2 class="block-title">建设中</h2>
+    <el-row :gutter="16">
+      <el-col v-for="m in plannedModules" :key="m.name" :xs="12" :sm="8" :md="4">
+        <el-card shadow="never" class="planned-card">
+          <span class="planned-name">{{ m.name }}</span>
+          <p class="planned-desc">{{ m.desc }}</p>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <p class="home-footer">{{ title }} · 管理端</p>
   </div>
 </template>
 
 <script setup name="Index" lang="ts">
-const goTarget = (url: string) => {
-  window.open(url, '__blank');
-};
+const title = import.meta.env.VITE_APP_TITLE || '心飞健康';
+const router = useRouter();
+
+const liveCards = [
+  { name: '检查项管理', desc: '维护检查/检验项目、扩展信息与参考区间', path: '/appointment/checkitem', icon: 'Memo' },
+  { name: '检查组管理', desc: '组合检查项，配置承检科室与标本要求', path: '/appointment/checkgroup', icon: 'Files' },
+  { name: '套餐管理', desc: '面向 C 端售卖的体检套餐与适用人群', path: '/appointment/setmeal', icon: 'Box' }
+];
+
+const plannedModules = [
+  { name: '预约与订单', desc: '号源排期、下单支付' },
+  { name: '健康评估', desc: '问卷量表与风险分层' },
+  { name: '干预随访', desc: '个性化管理方案' },
+  { name: '知识库', desc: '健康内容与素材' },
+  { name: '企业服务', desc: '机构客户与团队预约' },
+  { name: '统计报表', desc: '经营与健康指标看板' }
+];
+
+const go = (path: string) => router.push(path);
 </script>
 
 <style lang="scss" scoped>
 .home {
-  blockquote {
-    padding: 10px 20px;
-    margin: 0 0 20px;
-    font-size: 17.5px;
-    border-left: 5px solid #eee;
-  }
-  hr {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #eee;
-  }
-  .col-item {
-    margin-bottom: 20px;
-  }
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    border-radius: var(--app-radius-lg, 8px);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color)) 0%, var(--el-bg-color) 60%);
+    border: 1px solid var(--el-border-color-lighter);
 
-  ul {
-    padding: 0;
-    margin: 0;
-  }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      color: var(--el-text-color-primary);
+    }
 
-  font-family: 'open sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  color: #676a6c;
-  overflow-x: hidden;
+    .hero-desc {
+      margin: 0;
+      color: var(--el-text-color-regular);
+      font-size: 14px;
+    }
 
-  ul {
-    list-style-type: none;
-  }
-
-  h4 {
-    margin-top: 0px;
-  }
-
-  h2 {
-    margin-top: 10px;
-    font-size: 26px;
-    font-weight: 100;
-  }
-
-  p {
-    margin-top: 10px;
-
-    b {
-      font-weight: 700;
+    .hero-icon {
+      color: var(--el-color-primary);
+      flex-shrink: 0;
     }
   }
 
-  .update-log {
-    ol {
-      display: block;
-      list-style-type: decimal;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      margin-inline-start: 0;
-      margin-inline-end: 0;
-      padding-inline-start: 40px;
+  .block-title {
+    font-size: 16px;
+    margin: 0 0 12px;
+    color: var(--el-text-color-primary);
+  }
+
+  .entry-card {
+    cursor: pointer;
+    margin-bottom: 16px;
+    height: calc(100% - 16px);
+
+    .entry-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--el-color-primary);
+
+      .entry-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
     }
+
+    .entry-desc {
+      margin: 10px 0 12px;
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      min-height: 20px;
+    }
+  }
+
+  .planned-card {
+    margin-bottom: 16px;
+    background: var(--el-fill-color-lighter);
+
+    .planned-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+
+    .planned-desc {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  .home-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
   }
 }
 </style>
