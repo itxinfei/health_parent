@@ -96,8 +96,9 @@ const { t } = useI18n();
 
 const loginForm = ref<LoginData>({
   tenantId: '000000',
-  username: 'admin',
-  password: 'admin123',
+  // 上游 demo 预填 admin/admin123 属硬编码凭据（DENY-006），清空；tenantId 为单机构默认租户非凭据
+  username: '',
+  password: '',
   rememberMe: false,
   code: '',
   uuid: ''
@@ -163,7 +164,7 @@ const handleLogin = () => {
         }
       }
     } else {
-      console.log('error submit!', fields);
+      ElMessage.warning('请正确填写表单必填项');
     }
   });
 };
