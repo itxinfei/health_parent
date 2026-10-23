@@ -329,7 +329,8 @@
                         name: ''
                     },
                     dataList: [],
-                    formData: {},
+                    // el-dialog 内容在页面加载期即参与渲染，ext/refs 骨架缺失会让根实例渲染抛错整页白屏
+                    formData: { ext: {}, refs: [] },
                     dialogVisible: false,
                     isEdit: false,
                     activeTab: 'basic',

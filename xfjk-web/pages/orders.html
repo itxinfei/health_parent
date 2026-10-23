@@ -11,6 +11,12 @@
         <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/tokens.css">
         <link rel="stylesheet" href="../css/style.css">
+        <style>
+            .detail-kv { width: 100%; border-collapse: collapse; font-size: 13px; }
+            .detail-kv th, .detail-kv td { border: 1px solid #ebeef5; padding: 8px 12px; text-align: left; }
+            .detail-kv th { background: #f5f7fa; color: #909399; font-weight: normal; width: 90px; white-space: nowrap; }
+            .detail-kv td { color: #303133; }
+        </style>
     </head>
     <body class="hold-transition">
         <div id="app" class="page-wrap">
@@ -162,19 +168,15 @@
             <!-- 详情弹窗 -->
             <div class="add-form">
                 <el-dialog title="订单详情" :visible.sync="detailVisible" custom-class="unified-dialog" width="640px">
-                    <el-descriptions :column="2" size="small" border>
-                        <el-descriptions-item label="订单号">{{ detail.id }}</el-descriptions-item>
-                        <el-descriptions-item label="体检号">{{ detail.ext ? detail.ext.examNo : '-' }}</el-descriptions-item>
-                        <el-descriptions-item label="预约日期">{{ detail.orderDate }}</el-descriptions-item>
-                        <el-descriptions-item label="预约类型">{{ detail.orderType }}</el-descriptions-item>
-                        <el-descriptions-item label="预约状态">{{ detail.orderStatus }}</el-descriptions-item>
-                        <el-descriptions-item label="流程状态">{{ detail.ext ? detail.ext.flowStatus : '-' }}</el-descriptions-item>
-                        <el-descriptions-item label="登记人">{{ detail.ext && detail.ext.registerBy ? detail.ext.registerBy : '-' }}</el-descriptions-item>
-                        <el-descriptions-item label="登记时间">{{ detail.ext && detail.ext.registerTime ? detail.ext.registerTime : '-' }}</el-descriptions-item>
-                        <el-descriptions-item label="取消原因" :span="2">{{ detail.ext && detail.ext.cancelReason ? detail.ext.cancelReason : '-' }}</el-descriptions-item>
-                        <el-descriptions-item label="延期次数">{{ detail.ext ? detail.ext.postponeCount : 0 }}</el-descriptions-item>
-                        <el-descriptions-item label="延期至">{{ detail.ext && detail.ext.postponeUntil ? detail.ext.postponeUntil : '-' }}</el-descriptions-item>
-                    </el-descriptions>
+                    <!-- vendored Element-UI 为 2.6.2，无 el-descriptions（2.15+），用键值表格代替 -->
+                    <table class="detail-kv">
+                        <tr><th>订单号</th><td>{{ detail.id }}</td><th>体检号</th><td>{{ detail.ext ? detail.ext.examNo : '-' }}</td></tr>
+                        <tr><th>预约日期</th><td>{{ detail.orderDate }}</td><th>预约类型</th><td>{{ detail.orderType }}</td></tr>
+                        <tr><th>预约状态</th><td>{{ detail.orderStatus }}</td><th>流程状态</th><td>{{ detail.ext ? detail.ext.flowStatus : '-' }}</td></tr>
+                        <tr><th>登记人</th><td>{{ detail.ext && detail.ext.registerBy ? detail.ext.registerBy : '-' }}</td><th>登记时间</th><td>{{ detail.ext && detail.ext.registerTime ? detail.ext.registerTime : '-' }}</td></tr>
+                        <tr><th>取消原因</th><td colspan="3">{{ detail.ext && detail.ext.cancelReason ? detail.ext.cancelReason : '-' }}</td></tr>
+                        <tr><th>延期次数</th><td>{{ detail.ext ? detail.ext.postponeCount : 0 }}</td><th>延期至</th><td>{{ detail.ext && detail.ext.postponeUntil ? detail.ext.postponeUntil : '-' }}</td></tr>
+                    </table>
                     <div class="page-card-header" style="margin-top: 16px;">
                         <span class="page-card-title">订单流水</span>
                     </div>
