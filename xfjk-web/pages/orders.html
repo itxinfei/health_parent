@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>心飞健康 · 预约列表</title>
+        <meta name="description" content="心飞健康">
+        <meta name="keywords" content="心飞健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
+        <link rel="stylesheet" href="../css/style.css">
+    </head>
+    <body class="hold-transition">
+        <div id="app" class="page-wrap">
+            <h1 class="page-title">预约列表</h1>
+
+            <!-- 筛选卡片 -->
+            <div class="page-card">
+                <el-form :inline="true" size="small" @submit.native.prevent>
+                    <el-form-item label="预约日期">
+                        <el-date-picker v-model="searchForm.dateRange" type="daterange" value-format="yyyy-MM-dd"
+                                        range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                        style="width: 260px;" @change="search()"></el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="预约状态">
+                        <el-select v-model="searchForm.orderStatus" placeholder="全部" clearable style="width: 130px;" @change="search()">
+                            <el-option label="未到诊" value="未到诊"></el-option>
+                            <el-option label="已到诊" value="已到诊"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="流程状态">
+                        <el-select v-model="searchForm.flowStatus" placeholder="全部" clearable style="width: 150px;" @change="search()">
+                            <el-option v-for="s in flowStatuses" :key="s.value" :label="s.label" :value="s.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button icon="el-icon-search" @click="search()">查询</el-button>
+                        <el-button icon="el-icon-refresh-left" @click="resetSearch()">重置</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <!-- 表格卡片 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">预约订单</span>
+                    <span class="list-total">共 {{ pagination.total }} 条</span>
+                </div>
+                <el-table size="small" :data="dataList" highlight-current-row>
+                    <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+                    <el-table-column prop="orderDate" label="预约日期" align="center" width="110"></el-table-column>
+                    <el-table-column prop="orderType" label="预约类型" align="center" width="100"></el-table-column>
+                    <el-table-column prop="orderStatus" label="预约状态" align="center" width="90"></el-table-column>
+                    <el-table-column label="流程状态" align="center" width="110">
+                        <template slot-scope="scope">
+                            <el-tag v-if="scope.row.ext" size="mini" :type="flowTagType(scope.row.ext.flowStatus)">
+                                {{ scope.row.ext.flowStatus }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="体检号" align="center" width="150">
+                        <template slot-scope="scope">{{ scope.row.ext ? scope.row.ext.examNo : '' }}</template>
+                    </el-table-column>
+                    <el-table-column prop="memberId" label="会员ID" align="center" width="80"></el-table-column>
+                    <el-table-column prop="setmealId" label="套餐ID" align="center" width="80"></el-table-column>
+                    <el-table-column label="操作" align="center" width="260">
+                        <template slot-scope="scope">
+                            <el-button v-if="canRegister(scope.row)" type="text" class="op-primary" @click="handleRegister(scope.row)">到诊登记</el-button>
+                            <el-button v-if="canReschedule(scope.row)" type="text" class="op-primary" @click="openReschedule(scope.row)">改期</el-button>
+                            <el-button v-if="canPostpone(scope.row)" type="text" class="op-primary" @click="openPostpone(scope.row)">延期</el-button>
+                            <el-button v-if="scope.row.ext && scope.row.ext.flowStatus === '延期'" type="text" class="op-primary" @click="handlePostponeRestore(scope.row)">延期恢复</el-button>
+                            <el-button v-if="scope.row.ext && scope.row.ext.flowStatus === '已预约'" type="text" class="op-danger" @click="openCancel(scope.row)">取消</el-button>
+                            <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <div class="pagination-container">
+                    <el-pagination
+                        background
+                        layout="total, prev, pager, next, jumper"
+                        :current-page.sync="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        :total="pagination.total"
+                        @current-change="handleCurrentChange">
+                    </el-pagination>
+                </div>
+            </div>
+
+            <!-- 到诊登记弹窗 -->
+            <div class="add-form">
+                <el-dialog title="到诊登记" :visible.sync="registerVisible" custom-class="unified-dialog" width="420px">
+                    <el-form label-position="right" label-width="100px">
+                        <el-form-item label="预约日期">
+                            <el-input :value="currentRow.orderDate" disabled style="width: 220px;"></el-input>
+                        </el-form-item>
+                        <el-form-item label="备注">
+                            <el-input v-model="registerRemark" style="width: 220px;" placeholder="选填"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="registerVisible = false">取消</el-button>
+                        <el-button type="primary" @click="submitRegister()">确定登记</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 改期弹窗 -->
+            <div class="add-form">
+                <el-dialog title="订单改期" :visible.sync="rescheduleVisible" custom-class="unified-dialog" width="420px">
+                    <el-form label-position="right" label-width="100px">
+                        <el-form-item label="原预约日期">
+                            <el-input :value="currentRow.orderDate" disabled style="width: 220px;"></el-input>
+                        </el-form-item>
+                        <el-form-item label="目标日期">
+                            <el-date-picker v-model="targetDate" type="date" value-format="yyyy-MM-dd"
+                                            :picker-options="datePickerOptions" style="width: 220px;"
+                                            placeholder="选择目标日期"></el-date-picker>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="rescheduleVisible = false">取消</el-button>
+                        <el-button type="primary" @click="submitReschedule()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 延期弹窗 -->
+            <div class="add-form">
+                <el-dialog title="订单延期" :visible.sync="postponeVisible" custom-class="unified-dialog" width="420px">
+                    <el-form label-position="right" label-width="100px">
+                        <el-form-item label="延期至">
+                            <el-date-picker v-model="postponeUntil" type="date" value-format="yyyy-MM-dd"
+                                            :picker-options="datePickerOptions" style="width: 220px;"
+                                            placeholder="选择延期日期"></el-date-picker>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="postponeVisible = false">取消</el-button>
+                        <el-button type="primary" @click="submitPostpone()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 取消弹窗 -->
+            <div class="add-form">
+                <el-dialog title="取消预约" :visible.sync="cancelVisible" custom-class="unified-dialog" width="420px">
+                    <el-form ref="cancelForm" :model="cancelForm" :rules="cancelRules" label-position="right" label-width="100px">
+                        <el-form-item label="取消原因" prop="reason">
+                            <el-input v-model="cancelForm.reason" type="textarea" maxlength="255" show-word-limit
+                                      style="width: 220px;" placeholder="必填，最多 255 字"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancelVisible = false">取消</el-button>
+                        <el-button type="danger" @click="submitCancel()">确认取消预约</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 详情弹窗 -->
+            <div class="add-form">
+                <el-dialog title="订单详情" :visible.sync="detailVisible" custom-class="unified-dialog" width="640px">
+                    <el-descriptions :column="2" size="small" border>
+                        <el-descriptions-item label="订单号">{{ detail.id }}</el-descriptions-item>
+                        <el-descriptions-item label="体检号">{{ detail.ext ? detail.ext.examNo : '-' }}</el-descriptions-item>
+                        <el-descriptions-item label="预约日期">{{ detail.orderDate }}</el-descriptions-item>
+                        <el-descriptions-item label="预约类型">{{ detail.orderType }}</el-descriptions-item>
+                        <el-descriptions-item label="预约状态">{{ detail.orderStatus }}</el-descriptions-item>
+                        <el-descriptions-item label="流程状态">{{ detail.ext ? detail.ext.flowStatus : '-' }}</el-descriptions-item>
+                        <el-descriptions-item label="登记人">{{ detail.ext && detail.ext.registerBy ? detail.ext.registerBy : '-' }}</el-descriptions-item>
+                        <el-descriptions-item label="登记时间">{{ detail.ext && detail.ext.registerTime ? detail.ext.registerTime : '-' }}</el-descriptions-item>
+                        <el-descriptions-item label="取消原因" :span="2">{{ detail.ext && detail.ext.cancelReason ? detail.ext.cancelReason : '-' }}</el-descriptions-item>
+                        <el-descriptions-item label="延期次数">{{ detail.ext ? detail.ext.postponeCount : 0 }}</el-descriptions-item>
+                        <el-descriptions-item label="延期至">{{ detail.ext && detail.ext.postponeUntil ? detail.ext.postponeUntil : '-' }}</el-descriptions-item>
+                    </el-descriptions>
+                    <div class="page-card-header" style="margin-top: 16px;">
+                        <span class="page-card-title">订单流水</span>
+                    </div>
+                    <el-table size="mini" :data="detail.logs || []" max-height="260">
+                        <el-table-column prop="createTime" label="时间" align="center" width="160"></el-table-column>
+                        <el-table-column prop="action" label="动作" align="center" width="90"></el-table-column>
+                        <el-table-column prop="fromStatus" label="原状态" align="center" width="100"></el-table-column>
+                        <el-table-column prop="toStatus" label="新状态" align="center" width="100"></el-table-column>
+                        <el-table-column prop="operator" label="操作人" align="center" width="100"></el-table-column>
+                        <el-table-column prop="remark" label="备注" align="left" show-overflow-tooltip></el-table-column>
+                    </el-table>
+                </el-dialog>
+            </div>
+        </div>
+
+        <!-- 引入组件库 -->
+        <script src="../js/vue.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script src="../js/axios-0.18.0.js"></script>
+        <script src="../js/config.js"></script>
+        <script src="../js/api.js"></script>
+        <script>
+            let vue = new Vue({
+                el: '#app',
+                data: {
+                    pagination: { currentPage: 1, pageSize: 10, total: 0 },
+                    searchForm: { dateRange: null, orderStatus: '', flowStatus: '' },
+                    flowStatuses: [
+                        { label: '已预约', value: '已预约' },
+                        { label: '已到诊', value: '已到诊' },
+                        { label: '检查中', value: '检查中' },
+                        { label: '待总检', value: '待总检' },
+                        { label: '已总检', value: '已总检' },
+                        { label: '报告已打印', value: '报告已打印' },
+                        { label: '报告已发放', value: '报告已发放' },
+                        { label: '已取消', value: '已取消' },
+                        { label: '延期', value: '延期' }
+                    ],
+                    flowTagMap: {
+                        '已预约': 'info', '已到诊': 'primary', '检查中': 'warning',
+                        '待总检': 'warning', '已总检': 'success', '报告已打印': 'success',
+                        '报告已发放': 'success', '已取消': 'danger', '延期': 'warning'
+                    },
+                    dataList: [],
+                    currentRow: {},
+                    registerVisible: false,
+                    registerRemark: '',
+                    rescheduleVisible: false,
+                    targetDate: '',
+                    postponeVisible: false,
+                    postponeUntil: '',
+                    cancelVisible: false,
+                    cancelForm: { reason: '' },
+                    cancelRules: {
+                        reason: [{ required: true, message: '取消原因为必填项', trigger: 'blur' }]
+                    },
+                    detailVisible: false,
+                    detail: {},
+                    datePickerOptions: {
+                        disabledDate(time) { return time.getTime() < Date.now() - 86400000; }
+                    }
+                },
+                created() {
+                    this.findPage();
+                },
+                methods: {
+                    buildParams() {
+                        let params = {
+                            pageNum: this.pagination.currentPage,
+                            pageSize: this.pagination.pageSize
+                        };
+                        if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
+                            params.orderDateBegin = this.searchForm.dateRange[0];
+                            params.orderDateEnd = this.searchForm.dateRange[1];
+                        }
+                        if (this.searchForm.orderStatus) params.orderStatus = this.searchForm.orderStatus;
+                        if (this.searchForm.flowStatus) params.flowStatus = this.searchForm.flowStatus;
+                        return params;
+                    },
+                    search() {
+                        this.pagination.currentPage = 1;
+                        this.findPage();
+                    },
+                    resetSearch() {
+                        this.searchForm = { dateRange: null, orderStatus: '', flowStatus: '' };
+                        this.search();
+                    },
+                    findPage() {
+                        axios.get('/health/orders', { params: this.buildParams() }).then(response => {
+                            this.dataList = response.data.rows;
+                            this.pagination.total = response.data.total;
+                        });
+                    },
+                    handleCurrentChange(currentPage) {
+                        this.pagination.currentPage = currentPage;
+                        this.findPage();
+                    },
+                    flowTagType(status) {
+                        return this.flowTagMap[status] || 'info';
+                    },
+                    canRegister(row) {
+                        return row.ext && row.ext.flowStatus === '已预约' && row.orderDate <= this.today();
+                    },
+                    canReschedule(row) {
+                        return row.ext && ['已预约', '已到诊'].includes(row.ext.flowStatus);
+                    },
+                    canPostpone(row) {
+                        return row.ext && ['已到诊', '检查中'].includes(row.ext.flowStatus);
+                    },
+                    today() {
+                        let d = new Date();
+                        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                    },
+                    handleRegister(row) {
+                        this.currentRow = row;
+                        this.registerRemark = '';
+                        this.registerVisible = true;
+                    },
+                    submitRegister() {
+                        let payload = this.registerRemark ? { remark: this.registerRemark } : {};
+                        axios.put('/health/orders/' + this.currentRow.id + '/register', payload).then(response => {
+                            this.registerVisible = false;
+                            this.$message.success('登记成功，体检号：' + response.data.examNo);
+                            this.findPage();
+                        });
+                    },
+                    openReschedule(row) {
+                        this.currentRow = row;
+                        this.targetDate = '';
+                        this.rescheduleVisible = true;
+                    },
+                    submitReschedule() {
+                        if (!this.targetDate) {
+                            this.$message.error('请选择目标日期');
+                            return;
+                        }
+                        axios.put('/health/orders/' + this.currentRow.id + '/reschedule', { targetDate: this.targetDate }).then(() => {
+                            this.rescheduleVisible = false;
+                            this.$message.success('改期成功');
+                            this.findPage();
+                        });
+                    },
+                    openPostpone(row) {
+                        this.currentRow = row;
+                        this.postponeUntil = '';
+                        this.postponeVisible = true;
+                    },
+                    submitPostpone() {
+                        if (!this.postponeUntil) {
+                            this.$message.error('请选择延期日期');
+                            return;
+                        }
+                        axios.put('/health/orders/' + this.currentRow.id + '/postpone', { until: this.postponeUntil }).then(() => {
+                            this.postponeVisible = false;
+                            this.$message.success('延期成功');
+                            this.findPage();
+                        });
+                    },
+                    handlePostponeRestore(row) {
+                        this.$confirm('恢复后流程状态回到已到诊，是否继续？', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            axios.put('/health/orders/' + row.id + '/postpone-restore').then(() => {
+                                this.$message.success('延期恢复成功');
+                                this.findPage();
+                            });
+                        }).catch(() => {});
+                    },
+                    openCancel(row) {
+                        this.currentRow = row;
+                        this.cancelForm = { reason: '' };
+                        this.cancelVisible = true;
+                    },
+                    submitCancel() {
+                        this.$refs['cancelForm'].validate(valid => {
+                            if (!valid) return false;
+                            axios.put('/health/orders/' + this.currentRow.id + '/cancel', this.cancelForm).then(() => {
+                                this.cancelVisible = false;
+                                this.$message.success('已取消，当日名额已回退');
+                                this.findPage();
+                            });
+                        });
+                    },
+                    handleDetail(row) {
+                        axios.get('/health/orders/' + row.id).then(response => {
+                            this.detail = response.data;
+                            this.detailVisible = true;
+                        });
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

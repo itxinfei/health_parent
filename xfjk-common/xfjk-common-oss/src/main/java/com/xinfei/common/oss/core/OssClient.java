@@ -14,14 +14,16 @@ import com.xinfei.common.oss.exception.OssException;
 import com.xinfei.common.oss.properties.OssProperties;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.core.async.ResponsePublisher;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.*;
@@ -183,44 +185,26 @@ public class OssClient {
      * @throws OssException 如果上传失败，抛出自定义异常
      */
     public UploadResult upload(InputStream inputStream, String key, Long length, String contentType) {
-        // 如果输入流不是 ByteArrayInputStream，则将其读取为字节数组再创建 ByteArrayInputStream
-        if (!(inputStream instanceof ByteArrayInputStream)) {
-            inputStream = new ByteArrayInputStream(IoUtil.readBytes(inputStream));
-        }
+        // 原实现用 transferManager + BlockingInputStreamAsyncRequestBody：写入线程要等请求体被订阅，
+        // 而订阅只在服务请求真正发起时才发生，单线程调用方会死等到 subscribeTimeout(120s) 才抛
+        // "The service request was not made within 120 seconds"，表现为上传接口挂两分钟后 500。
+        // 上传入口的字节已在内存里，直接同步 putObject 即可，不需要分片传输管理器。
+        byte[] data = IoUtil.readBytes(inputStream);
         try {
-            // 创建异步请求体（length如果为空会报错）
-            BlockingInputStreamAsyncRequestBody body = BlockingInputStreamAsyncRequestBody.builder()
-                .contentLength(length)
-                .subscribeTimeout(Duration.ofSeconds(120))
-                .build();
-
-            // 使用 transferManager 进行上传
-            Upload upload = transferManager.upload(
-                x -> {
-                    x.requestBody(body).putObjectRequest(
-                        y -> y.bucket(properties.getBucketName())
-                            .key(key)
-                            .contentType(contentType)
-                            // 用于设置对象的访问控制列表（ACL）。不同云厂商对ACL的支持和实现方式有所不同，
-                            // 因此根据具体的云服务提供商，你可能需要进行不同的配置（自行开启，阿里云有acl权限配置，腾讯云没有acl权限配置）
-                            //.acl(getAccessPolicy().getObjectCannedACL())
-                            .build()
-                    );
-                    if (log.isDebugEnabled()) {
-                        x.addTransferListener(LoggingTransferListener.create());
-                    }
-                }
-            );
-
-            // 将输入流写入请求体
-            body.writeInputStream(inputStream);
-
-            // 等待文件上传操作完成
-            CompletedUpload uploadResult = upload.completionFuture().join();
-            String eTag = uploadResult.response().eTag();
+            PutObjectResponse response = client.putObject(
+                PutObjectRequest.builder()
+                    .bucket(properties.getBucketName())
+                    .key(key)
+                    .contentType(contentType)
+                    // 用于设置对象的访问控制列表（ACL）。不同云厂商对ACL的支持和实现方式有所不同，
+                    // 因此根据具体的云服务提供商，你可能需要进行不同的配置（自行开启，阿里云有acl权限配置，腾讯云没有acl权限配置）
+                    //.acl(getAccessPolicy().getObjectCannedACL())
+                    .build(),
+                AsyncRequestBody.fromBytes(data)
+            ).join();
 
             // 提取上传结果中的 ETag，并构建一个自定义的 UploadResult 对象
-            return UploadResult.builder().url(getUrl() + StringUtils.SLASH + key).filename(key).eTag(eTag).build();
+            return UploadResult.builder().url(getUrl() + StringUtils.SLASH + key).filename(key).eTag(response.eTag()).build();
         } catch (Exception e) {
             throw new OssException("上传文件失败，请检查配置信息:[" + e.getMessage() + "]");
         }

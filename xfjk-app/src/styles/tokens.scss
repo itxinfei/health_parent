@@ -1,0 +1,44 @@
+/* 心飞健康 · C 端设计令牌（文档 19 §2.1） */
+page,
+:root {
+  /* 品牌主色 */
+  --brand-primary: #00a870;
+  --brand-primary-light: #e6f7f1;
+  --brand-gradient: linear-gradient(135deg, #00a870 0%, #33b98d 100%);
+
+  /* 文字 */
+  --text-title: #1f2329;
+  --text-body: #4e5969;
+  --text-secondary: #86909c;
+  --text-disabled: #c9cdd4;
+
+  /* 边框/背景 */
+  --border-base: #e5e6eb;
+  --border-light: #f2f3f5;
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+
+  /* 状态色 */
+  --status-success: #00b42a;
+  --status-warning: #ff7d00;
+  --status-danger: #f53f3f;
+
+  /* 间距（8px 基准） */
+  --space-1: 4rpx;
+  --space-2: 8rpx;
+  --space-3: 12rpx;
+  --space-4: 16rpx;
+  --space-6: 24rpx;
+  --space-8: 32rpx;
+
+  /* 字号 */
+  --font-size-xs: 24rpx;
+  --font-size-sm: 26rpx;
+  --font-size-md: 32rpx;
+  --font-size-lg: 40rpx;
+
+  /* 圆角/阴影 */
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}

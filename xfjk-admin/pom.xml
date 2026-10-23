@@ -70,6 +70,12 @@
             <artifactId>xfjk-system</artifactId>
         </dependency>
 
+        <!--  预约管理业务模块  -->
+        <dependency>
+            <groupId>com.xinfei</groupId>
+            <artifactId>xfjk-health-appointment</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.xinfei</groupId>
             <artifactId>xfjk-job</artifactId>

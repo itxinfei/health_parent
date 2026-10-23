@@ -1,8 +1,9 @@
 /**
  * 后端响应适配层
  *
- * 新后端统一返回 {code, msg, data} 且 HTTP 状态恒为 200；页面沿用传智健康的旧约定
- * （rows/total 平铺、flag/message 表示结果）。这里一次性转换，避免 16 个页面各写一遍。
+ * 新后端统一返回 {code, msg, data} 且 HTTP 状态恒为 200；分页接口返回 TableDataInfo
+ * {code, msg, rows, total}（没有 data 字段）；页面沿用传智健康的旧约定（rows/total 平铺、
+ * flag/message 表示结果）。这里一次性转换，避免 16 个页面各写一遍。
  *
  * 关键作用：后端未实现的路径会返回 code=404 而 HTTP 仍是 200，axios 不会 reject，
  * 页面于是静默显示"暂无数据"。本层把这种情况转成显式提示。
@@ -70,6 +71,24 @@
         return config;
     });
 
+    // 分页信封（后端 TableDataInfo）没有 data 字段，rows/total 在顶层，整体透传
+    function isPageEnvelope(body) {
+        return Object.prototype.hasOwnProperty.call(body, 'rows');
+    }
+
+    function wrapPage(payload) {
+        var data = {
+            rows: payload.rows || [],
+            total: payload.total || 0
+        };
+        Object.defineProperties(data, {
+            status: { value: 0, enumerable: false },
+            flag: { value: true, enumerable: false },
+            message: { value: payload.msg || '', enumerable: false }
+        });
+        return data;
+    }
+
     axios.interceptors.response.use(function (response) {
         var body = response.data;
         // 文件流等非统一封装的响应原样放行
@@ -89,7 +108,7 @@
             }
             return Promise.reject(markNotified(new Error(text)));
         }
-        response.data = wrap(body.data, body.msg);
+        response.data = isPageEnvelope(body) ? wrapPage(body) : wrap(body.data, body.msg);
         return response;
     }, function (error) {
         // 真正的网络/HTTP 层错误（如 nginx 502）
@@ -98,6 +117,23 @@
     });
 
     window.XfjkApi = {
+        /**
+         * el-upload 自己发请求，不走 axios 拦截器，鉴权头要手工拼。
+         * 后端 SaInterceptor 会校验 header/param 的 clientid 与 token 内的是否一致，
+         * 少了它即使 token 正确也会被判未登录。
+         */
+        uploadHeaders: function () {
+            var headers = {};
+            if (window.XfjkConfig && window.XfjkConfig.clientId) {
+                headers.ClientID = window.XfjkConfig.clientId;
+            }
+            var token = localStorage.getItem(TOKEN_KEY);
+            if (token) {
+                headers.Authorization = 'Bearer ' + token;
+            }
+            return headers;
+        },
+
         /**
          * el-upload 的回调拿到的是原始响应体，不经过 axios 拦截器，
          * 用这个统一判定，避免三个上传页各写一套字段兼容逻辑。

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>心飞健康 · 禁忌规则</title>
+        <meta name="description" content="心飞健康">
+        <meta name="keywords" content="心飞健康">
+        <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+        <link rel="stylesheet" href="../plugins/elementui/index.css">
+        <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/tokens.css">
+        <link rel="stylesheet" href="../css/style.css">
+    </head>
+    <body class="hold-transition">
+        <div id="app" class="page-wrap">
+            <h1 class="page-title">禁忌规则</h1>
+
+            <!-- 工具卡片 -->
+            <div class="page-card">
+                <el-form :inline="true" size="small" @submit.native.prevent>
+                    <el-form-item>
+                        <el-button type="primary" icon="el-icon-plus" @click="handleCreate()">新建规则</el-button>
+                        <el-button icon="el-icon-data-analysis" @click="trialVisible = true">套餐禁忌试算</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <!-- 表格卡片 -->
+            <div class="page-card">
+                <div class="page-card-header">
+                    <span class="page-card-title">规则列表</span>
+                    <span class="list-total">共 {{ dataList.length }} 条</span>
+                </div>
+                <el-table size="small" :data="dataList" highlight-current-row>
+                    <el-table-column prop="ruleCode" label="规则编码" align="center" width="110"></el-table-column>
+                    <el-table-column label="范围" align="center" width="100">
+                        <template slot-scope="scope">{{ scopeLabel(scope.row.scope) }}</template>
+                    </el-table-column>
+                    <el-table-column prop="targetId" label="目标ID" align="center" width="90"></el-table-column>
+                    <el-table-column label="条件" align="left" show-overflow-tooltip>
+                        <template slot-scope="scope">
+                            <span style="font-family: monospace;">{{ formatCondition(scope.row.conditionJson) }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="处置档" align="center" width="100">
+                        <template slot-scope="scope">
+                            <el-tag size="mini" :type="actionTagType(scope.row.action)">{{ actionLabel(scope.row.action) }}</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="tipText" label="提示文案" align="left" show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="priority" label="优先级" align="center" width="80"></el-table-column>
+                    <el-table-column label="状态" align="center" width="80">
+                        <template slot-scope="scope">
+                            <el-tag size="mini" :type="scope.row.enabled === '1' ? 'success' : 'info'">
+                                {{ scope.row.enabled === '1' ? '启用' : '停用' }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center" width="150">
+                        <template slot-scope="scope">
+                            <el-button type="text" class="op-primary" @click="handleUpdate(scope.row)">编辑</el-button>
+                            <el-button type="text" :class="scope.row.enabled === '1' ? 'op-warning' : 'op-primary'"
+                                       @click="toggleEnabled(scope.row)">{{ scope.row.enabled === '1' ? '停用' : '启用' }}</el-button>
+                            <el-button type="text" class="op-danger" @click="handleDelete(scope.row)">删除</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+
+            <!-- 新增/编辑弹窗 -->
+            <div class="add-form">
+                <el-dialog :title="isEdit ? '编辑禁忌规则' : '新建禁忌规则'" :visible.sync="dialogVisible"
+                           custom-class="unified-dialog" width="620px">
+                    <el-form ref="dataForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px" size="small">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="规则编码" prop="ruleCode">
+                                    <el-input v-model="formData.ruleCode" style="width: 180px;"
+                                              placeholder="锚定 E 组编号，如 E1"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="作用范围" prop="scope">
+                                    <el-select v-model="formData.scope" style="width: 180px;" @change="formData.targetId = null">
+                                        <el-option label="检查项" value="CHECKITEM"></el-option>
+                                        <el-option label="检查组" value="CHECKGROUP"></el-option>
+                                        <el-option label="套餐" value="SETMEAL"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="目标" prop="targetId">
+                                    <el-select v-model="formData.targetId" style="width: 180px;" filterable
+                                               :loading="targetLoading" placeholder="先选范围再选目标">
+                                        <el-option v-for="t in targetOptions" :key="t.id" :label="t.name" :value="t.id"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="处置档" prop="action">
+                                    <el-select v-model="formData.action" style="width: 180px;">
+                                        <el-option label="拦截" value="0"></el-option>
+                                        <el-option label="提示" value="1"></el-option>
+                                        <el-option label="延后补检" value="2"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-form-item label="触发条件" prop="conditionJson">
+                            <el-input v-model="formData.conditionJson" type="textarea" :rows="3"
+                                      placeholder='JSON，键仅限 sex/pregnancy/married/hasSexHistory/ageMin/ageMax/inMenstruation/metalImplant。空对象 {} 匹配所有人'></el-input>
+                        </el-form-item>
+                        <el-form-item label="提示文案" prop="tipText">
+                            <el-input v-model="formData.tipText" type="textarea" maxlength="255" show-word-limit
+                                      placeholder="必须能直接展示给用户"></el-input>
+                        </el-form-item>
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="优先级">
+                                    <el-input-number v-model="formData.priority" :min="1" controls-position="right"
+                                                     style="width: 180px;"></el-input-number>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="是否启用">
+                                    <el-switch v-model="formData.enabled" active-value="1" inactive-value="0"></el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleSave()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 试算弹窗 -->
+            <div class="add-form">
+                <el-dialog title="套餐禁忌试算" :visible.sync="trialVisible" custom-class="unified-dialog" width="680px">
+                    <el-form :inline="true" size="small" @submit.native.prevent>
+                        <el-form-item label="套餐">
+                            <el-select v-model="trialForm.setmealId" style="width: 200px;" filterable>
+                                <el-option v-for="s in setmeals" :key="s.id" :label="s.name" :value="s.id"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="性别">
+                            <el-select v-model="trialForm.sex" style="width: 90px;">
+                                <el-option label="不限" value="0"></el-option>
+                                <el-option label="男" value="1"></el-option>
+                                <el-option label="女" value="2"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="婚况">
+                            <el-select v-model="trialForm.married" style="width: 90px;">
+                                <el-option label="不限" value="0"></el-option>
+                                <el-option label="已婚" value="1"></el-option>
+                                <el-option label="未婚" value="2"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="性生活史">
+                            <el-select v-model="trialForm.hasSexHistory" style="width: 90px;">
+                                <el-option label="不限" value="0"></el-option>
+                                <el-option label="有" value="1"></el-option>
+                                <el-option label="无" value="2"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="妊娠">
+                            <el-select v-model="trialForm.pregnancy" style="width: 100px;">
+                                <el-option label="未孕" value="0"></el-option>
+                                <el-option label="可能妊娠" value="1"></el-option>
+                                <el-option label="妊娠" value="3"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="年龄">
+                            <el-input-number v-model="trialForm.age" :min="0" :max="120" :controls="false"
+                                             style="width: 80px;"></el-input-number>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" @click="handleTrial()">试算</el-button>
+                        </el-form-item>
+                    </el-form>
+                    <template v-if="trialResult">
+                        <el-alert :type="trialResult.pass ? 'success' : 'error'" :closable="false" show-icon
+                                  :title="trialResult.pass ? '试算通过：无拦截级命中' : '存在拦截级命中，禁止下单'"
+                                  style="margin-bottom: 12px;"></el-alert>
+                        <template v-for="(group, gname) in trialGroups">
+                            <div v-if="trialResult[group.key] && trialResult[group.key].length" :key="gname"
+                                 class="page-card-header" style="margin-top: 8px;">
+                                <span class="page-card-title">{{ group.label }}（{{ trialResult[group.key].length }}）</span>
+                            </div>
+                            <el-table v-if="trialResult[group.key] && trialResult[group.key].length"
+                                      :key="gname" size="mini" :data="trialResult[group.key]" border style="margin-bottom: 8px;">
+                                <el-table-column prop="ruleCode" label="规则" width="90" align="center"></el-table-column>
+                                <el-table-column prop="itemName" label="目标" width="140" align="center"></el-table-column>
+                                <el-table-column prop="tipText" label="提示文案"></el-table-column>
+                            </el-table>
+                        </template>
+                    </template>
+                </el-dialog>
+            </div>
+        </div>
+
+        <!-- 引入组件库 -->
+        <script src="../js/vue.js"></script>
+        <script src="../plugins/elementui/index.js"></script>
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script src="../js/axios-0.18.0.js"></script>
+        <script src="../js/config.js"></script>
+        <script src="../js/api.js"></script>
+        <script>
+            let vue = new Vue({
+                el: '#app',
+                data: {
+                    dataList: [],
+                    formData: {},
+                    dialogVisible: false,
+                    isEdit: false,
+                    targetOptions: [],
+                    targetLoading: false,
+                    trialVisible: false,
+                    trialForm: { setmealId: null, sex: '0', married: '0', hasSexHistory: '0', pregnancy: '0', age: 30 },
+                    trialResult: null,
+                    setmeals: [],
+                    trialGroups: [
+                        { key: 'hits', label: '拦截级' },
+                        { key: 'warns', label: '提示级' },
+                        { key: 'delays', label: '延后补检' }
+                    ],
+                    rules: {
+                        ruleCode: [{ required: true, message: '规则编码为必填项', trigger: 'blur' }],
+                        scope: [{ required: true, message: '作用范围为必填项', trigger: 'change' }],
+                        targetId: [{ required: true, message: '目标为必填项', trigger: 'change' }],
+                        action: [{ required: true, message: '处置档为必填项', trigger: 'change' }],
+                        conditionJson: [{ required: true, message: '触发条件为必填项', trigger: 'blur' }],
+                        tipText: [{ required: true, message: '提示文案为必填项', trigger: 'blur' }]
+                    }
+                },
+                created() {
+                    this.findPage();
+                    this.loadSetmeals();
+                },
+                methods: {
+                    scopeLabel(scope) {
+                        return { CHECKITEM: '检查项', CHECKGROUP: '检查组', SETMEAL: '套餐' }[scope] || scope;
+                    },
+                    actionLabel(action) {
+                        return { '0': '拦截', '1': '提示', '2': '延后补检' }[action] || action;
+                    },
+                    actionTagType(action) {
+                        return { '0': 'danger', '1': 'warning', '2': 'info' }[action] || 'info';
+                    },
+                    formatCondition(json) {
+                        try {
+                            let obj = JSON.parse(json);
+                            let labels = {
+                                sex: '性别', pregnancy: '妊娠', married: '婚况', hasSexHistory: '性生活史',
+                                ageMin: '年龄≥', ageMax: '年龄≤', inMenstruation: '经期', metalImplant: '金属植入'
+                            };
+                            let parts = Object.keys(obj).map(k => {
+                                let v = obj[k];
+                                let label = labels[k] || k;
+                                if (k === 'sex') return label + ':' + v.map(x => ({ '0': '不限', '1': '男', '2': '女' }[x] || x)).join('/');
+                                return label + ':' + (Array.isArray(v) ? v.join('/') : v);
+                            });
+                            return parts.length ? parts.join(' 且 ') : '所有人';
+                        } catch (e) {
+                            return json;
+                        }
+                    },
+                    findPage() {
+                        axios.get('/health/forbids').then(response => {
+                            this.dataList = response.data || [];
+                        });
+                    },
+                    loadSetmeals() {
+                        axios.get('/health/setmeals/all').then(response => {
+                            this.setmeals = response.data || [];
+                        });
+                    },
+                    loadTargets(scope) {
+                        this.targetLoading = true;
+                        let url = { CHECKITEM: '/health/checkitems/all', CHECKGROUP: '/health/checkgroups/all' }[scope];
+                        if (scope === 'SETMEAL') {
+                            this.targetOptions = this.setmeals.map(s => ({ id: s.id, name: s.name }));
+                            this.targetLoading = false;
+                            return;
+                        }
+                        if (!url) {
+                            this.targetOptions = [];
+                            this.targetLoading = false;
+                            return;
+                        }
+                        axios.get(url).then(response => {
+                            this.targetOptions = (response.data || []).map(t => ({ id: t.id, name: t.name }));
+                            this.targetLoading = false;
+                        }).catch(() => {
+                            this.targetOptions = [];
+                            this.targetLoading = false;
+                        });
+                    },
+                    handleCreate() {
+                        this.isEdit = false;
+                        this.formData = { ruleCode: '', scope: 'CHECKITEM', targetId: null, action: '1',
+                                          conditionJson: '{}', tipText: '', priority: 100, enabled: '1' };
+                        this.targetOptions = [];
+                        this.dialogVisible = true;
+                    },
+                    handleUpdate(row) {
+                        this.isEdit = true;
+                        this.formData = Object.assign({}, row);
+                        this.loadTargets(row.scope);
+                        this.dialogVisible = true;
+                    },
+                    handleSave() {
+                        this.$refs['dataForm'].validate(valid => {
+                            if (!valid) return false;
+                            let request = this.isEdit
+                                ? axios.put('/health/forbids', this.formData)
+                                : axios.post('/health/forbids', this.formData);
+                            request.then(() => {
+                                this.dialogVisible = false;
+                                this.$message.success(this.isEdit ? '修改成功' : '新增成功');
+                                this.findPage();
+                            });
+                        });
+                    },
+                    toggleEnabled(row) {
+                        let next = row.enabled === '1' ? '0' : '1';
+                        axios.put('/health/forbids', Object.assign({}, row, { enabled: next })).then(() => {
+                            this.$message.success(next === '1' ? '已启用' : '已停用');
+                            this.findPage();
+                        });
+                    },
+                    handleDelete(row) {
+                        this.$confirm('删除后该规则立即失效，是否继续？', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            axios.delete('/health/forbids/' + row.id).then(() => {
+                                this.$message.success('删除成功');
+                                this.findPage();
+                            });
+                        }).catch(() => {});
+                    },
+                    handleTrial() {
+                        if (!this.trialForm.setmealId) {
+                            this.$message.error('请选择套餐');
+                            return;
+                        }
+                        axios.post('/health/forbid-check', this.trialForm).then(response => {
+                            this.trialResult = response.data;
+                        });
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

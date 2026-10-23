@@ -320,6 +320,12 @@
 
             <dependency>
                 <groupId>com.xinfei</groupId>
+                <artifactId>xfjk-health-appointment</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xinfei</groupId>
                 <artifactId>xfjk-system</artifactId>
                 <version>${revision}</version>
             </dependency>

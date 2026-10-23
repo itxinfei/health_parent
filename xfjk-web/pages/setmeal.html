@@ -25,11 +25,18 @@
             <!-- 筛选卡片 -->
             <div class="page-card">
                 <el-form :inline="true" size="small" @submit.native.prevent>
-                    <el-form-item>
-                        <el-input placeholder="编码 / 名称 / 助记码" v-model="pagination.queryString" style="width: 240px;" clearable @clear="findPage()" @keyup.enter.native="findPage()"></el-input>
+                    <el-form-item label="套餐名称">
+                        <el-input placeholder="按名称模糊查询" v-model="searchForm.name" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
+                    </el-form-item>
+                    <el-form-item label="套餐编码">
+                        <el-input placeholder="按编码模糊查询" v-model="searchForm.code" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
+                    </el-form-item>
+                    <el-form-item label="助记码">
+                        <el-input placeholder="按助记码模糊查询" v-model="searchForm.helpCode" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button icon="el-icon-search" @click="findPage()">查询</el-button>
+                        <el-button icon="el-icon-search" @click="search()">查询</el-button>
+                        <el-button icon="el-icon-refresh-left" @click="resetSearch()">重置</el-button>
                         <el-button type="primary" icon="el-icon-plus" @click="handleCreate()">新建套餐</el-button>
                     </el-form-item>
                 </el-form>
@@ -47,7 +54,7 @@
                     <el-table-column prop="name" label="套餐名称" align="left"></el-table-column>
                     <el-table-column label="适用性别" align="center" width="90">
                         <template slot-scope="scope">
-                            <span>{{ scope.row.sex == '0' ? '不限' : scope.row.sex == '1' ? '男' : '女'}}</span>
+                            <span>{{ scope.row.sex == '1' ? '男' : scope.row.sex == '2' ? '女' : '不限' }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="age" label="适用年龄" align="center" width="90"></el-table-column>
@@ -123,7 +130,9 @@
                                         <el-form-item label="上传图片">
                                             <el-upload
                                                 class="avatar-uploader"
-                                                action="/setMeal/upload.do"
+                                                action="/health/setmeals/image"
+                                                name="file"
+                                                :headers="uploadHeaders"
                                                 :show-file-list="false"
                                                 :on-success="handleAvatarSuccess"
                                                 :before-upload="beforeAvatarUpload">
@@ -185,78 +194,120 @@
                     pagination: {
                         currentPage: 1,
                         pageSize: 10,
-                        total: 100,
-                        queryString: null
+                        total: 0
+                    },
+                    searchForm: {
+                        name: '',
+                        code: '',
+                        helpCode: ''
                     },
                     dataList: [],
                     formData: {},
                     tableData: [],
-                    checkgroupIds: [],
                     dialogFormVisible: false,
-                    dialogFormVisible4Edit: false,
-                    imageUrl: ''
+                    imageUrl: '',
+                    uploadHeaders: {}
                 },
                 created() {
+                    // el-upload 不走 axios 拦截器，鉴权头要在进页面时取一次
+                    this.uploadHeaders = XfjkApi.uploadHeaders();
                     this.findPage();
                 },
                 methods: {
-                    // 文件上传成功后的钩子
+                    buildParams() {
+                        let params = {
+                            pageNum: this.pagination.currentPage,
+                            pageSize: this.pagination.pageSize
+                        };
+                        if (this.searchForm.name) params.name = this.searchForm.name;
+                        if (this.searchForm.code) params.code = this.searchForm.code;
+                        if (this.searchForm.helpCode) params.helpCode = this.searchForm.helpCode;
+                        return params;
+                    },
+                    // 只提交 BO 有的字段，imgUrl/checkGroups 是后端派生的展示字段
+                    buildPayload() {
+                        return {
+                            name: this.formData.name,
+                            code: this.formData.code,
+                            helpCode: this.formData.helpCode,
+                            sex: this.formData.sex,
+                            age: this.formData.age,
+                            price: this.formData.price === '' ? null : this.formData.price,
+                            remark: this.formData.remark,
+                            attention: this.formData.attention,
+                            img: this.formData.img,
+                            checkGroupIds: this.collectCheckgroupIds()
+                        };
+                    },
+                    // 文件上传成功后的钩子：img 存 OSS 主键，回显用 url
                     handleAvatarSuccess(response) {
                         let r = XfjkApi.fromUpload(response);
-                        if (r.ok) {
-                            this.formData.img = r.data;
-                            this.imageUrl = '/setMeal/download.do?fileName=' + r.data;
+                        if (r.ok && r.data) {
+                            this.formData = Object.assign({}, this.formData, { img: r.data.ossId });
+                            this.imageUrl = r.data.url;
+                            this.$message.success("图片上传成功");
                         } else {
                             this.$message.error(r.text || '图片上传失败');
                         }
                     },
-                    // 上传图片之前执行
+                    // 上传图片之前执行（与后端 SetmealServiceImpl 的白名单保持一致）
                     beforeAvatarUpload(file) {
-                        const isJPG = file.type === 'image/jpeg';
+                        const isImage = ['image/jpeg', 'image/png', 'image/webp'].indexOf(file.type) > -1;
                         const isLt2M = file.size / 1024 / 1024 < 2;
-                        if (!isJPG) {
-                            this.$message.error('上传套餐图片只能是 JPG 格式!');
+                        if (!isImage) {
+                            this.$message.error('上传套餐图片只能是 JPG / PNG / WEBP 格式!');
                         }
                         if (!isLt2M) {
                             this.$message.error('上传套餐图片大小不能超过 2MB!');
                         }
-                        return isJPG && isLt2M;
+                        return isImage && isLt2M;
                     },
                     // 收集勾选的检查组 id
                     collectCheckgroupIds() {
                         return this.tableData.filter(item => item.checked).map(item => item.id);
                     },
+                    search() {
+                        this.pagination.currentPage = 1;
+                        this.findPage();
+                    },
+                    resetSearch() {
+                        this.searchForm = { name: '', code: '', helpCode: '' };
+                        this.search();
+                    },
                     handleAdd() {
-                        axios.post(`/setMeal/${this.formData.id == null ? 'add.do' : 'update.do'}?ids=${this.collectCheckgroupIds()}`, this.formData).then(response => {
-                            if (response.data.flag) {
+                        if (this.formData.id == null) {
+                            axios.post(`/health/setmeals`, this.buildPayload()).then(() => {
                                 this.dialogFormVisible = false;
+                                this.$message.success("新增成功");
                                 this.findPage();
-                                this.$message.success(response.data.message);
-                            } else {
-                                this.$message.error(response.data.message);
-                            }
-                        })
+                            });
+                        } else {
+                            axios.put(`/health/setmeals/${this.formData.id}`, this.buildPayload()).then(() => {
+                                this.dialogFormVisible = false;
+                                this.$message.success("修改成功");
+                                this.findPage();
+                            });
+                        }
                     },
                     findPage() {
-                        let params = {
-                            currentPage: this.pagination.currentPage,
-                            pageSize: this.pagination.pageSize,
-                            queryString: this.pagination.queryString
-                        };
-                        axios.post(`/setMeal/findByPage.do`, params).then(response => {
+                        axios.get(`/health/setmeals`, { params: this.buildParams() }).then(response => {
                             this.dataList = response.data.rows;
                             this.pagination.total = response.data.total;
                         })
+                    },
+                    loadCheckGroups(checkedIds) {
+                        axios.get(`/health/checkgroups/all`).then(response => {
+                            this.tableData = (response.data || []).map(item => Object.assign({
+                                checked: (checkedIds || []).indexOf(item.id) > -1
+                            }, item));
+                        });
                     },
                     handleCreate() {
                         this.dialogFormVisible = true;
                         this.activeName = "first";
                         this.formData = {};
-                        this.checkgroupIds = [];
                         this.imageUrl = '';
-                        axios.get(`/checkGroup/findAll.do`).then(response => {
-                            this.tableData = (response.data || []).map(item => Object.assign({ checked: false }, item));
-                        });
+                        this.loadCheckGroups([]);
                     },
                     handleCurrentChange(currentPage) {
                         this.pagination.currentPage = currentPage;
@@ -265,37 +316,25 @@
                     handleEdit(id) {
                         this.dialogFormVisible = true;
                         this.activeName = "first";
-                        axios.get(`/setMeal/findById.do?id=${id}`).then(response => {
+                        axios.get(`/health/setmeals/${id}`).then(response => {
                             this.formData = response.data;
-                            this.imageUrl = response.data.img ? '/setMeal/download.do?fileName=' + response.data.img : '';
+                            this.imageUrl = response.data.imgUrl || '';
                         });
-                        axios.get(`/checkGroup/findAll.do`).then(response => {
-                            this.tableData = (response.data || []).map(item => Object.assign({ checked: false }, item));
-                        });
-                        // 已勾选的检查组回显
-                        axios.get(`/setMeal/findCheckGroupById.do?id=${id}`).then(response => {
-                            let checkedIds = (response.data || []).map(item => item.id);
-                            this.tableData.forEach(item => {
-                                if (checkedIds.indexOf(item.id) > -1) {
-                                    item.checked = true;
-                                }
-                            });
+                        // 套餐已有检查组回显
+                        axios.get(`/health/setmeals/${id}/checkgroups`).then(response => {
+                            this.loadCheckGroups((response.data || []).map(item => item.id));
                         });
                     },
                     handleDelete(id) {
-                        this.$confirm('是否删除该套餐？删除后不可恢复。', '警告', {
+                        this.$confirm('是否删除该套餐？套餐下存在预约订单时不可删除。', '警告', {
                             confirmButtonText: '确定',
                             cancelButtonText: '取消',
                             type: 'warning'
                         }).then(() => {
-                            axios.post(`/setMeal/delete.do?id=${id}`).then(response => {
-                                if (response.data.flag) {
-                                    this.$message.success("删除成功");
-                                    this.findPage();
-                                } else {
-                                    this.$message.error(response.data.message || "服务器异常");
-                                }
-                            })
+                            axios.delete(`/health/setmeals/${id}`).then(() => {
+                                this.$message.success("删除成功");
+                                this.findPage();
+                            });
                         }).catch(() => {
                         });
                     }

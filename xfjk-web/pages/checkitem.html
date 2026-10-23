@@ -19,11 +19,15 @@
             <!-- 筛选卡片 -->
             <div class="page-card">
                 <el-form :inline="true" size="small" @submit.native.prevent>
-                    <el-form-item>
-                        <el-input placeholder="项目编码 / 项目名称" v-model="pagination.queryString" style="width: 240px;" clearable @clear="findPage()" @keyup.enter.native="findPage()"></el-input>
+                    <el-form-item label="项目编码">
+                        <el-input placeholder="按编码模糊查询" v-model="searchForm.code" style="width: 180px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
+                    </el-form-item>
+                    <el-form-item label="项目名称">
+                        <el-input placeholder="按名称模糊查询" v-model="searchForm.name" style="width: 180px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button icon="el-icon-search" @click="findPage()">查询</el-button>
+                        <el-button icon="el-icon-search" @click="search()">查询</el-button>
+                        <el-button icon="el-icon-refresh-left" @click="resetSearch()">重置</el-button>
                         <el-button type="primary" icon="el-icon-plus" @click="handleCreate()">新建检查项</el-button>
                     </el-form-item>
                 </el-form>
@@ -37,15 +41,37 @@
                 </div>
                 <el-table size="small" :data="dataList" highlight-current-row>
                     <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
-                    <el-table-column prop="code" label="项目编码" align="left"></el-table-column>
-                    <el-table-column prop="name" label="项目名称" align="left"></el-table-column>
-                    <el-table-column label="适用性别" align="center" width="90">
+                    <el-table-column prop="code" label="编码" align="left" width="90"></el-table-column>
+                    <el-table-column prop="name" label="名称" align="left" width="130"></el-table-column>
+                    <el-table-column label="性别" align="center" width="70">
                         <template slot-scope="scope">
-                            <span>{{ scope.row.sex == '0' ? '不限' : scope.row.sex == '1' ? '男' : '女'}}</span>
+                            <span>{{ sexLabel(scope.row.sex) }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="age" label="适用年龄" align="center" width="90"></el-table-column>
-                    <el-table-column prop="remark" label="项目说明" align="left" show-overflow-tooltip></el-table-column>
+                    <el-table-column label="类型" align="center" width="70">
+                        <template slot-scope="scope">
+                            <span>{{ scope.row.type == '1' ? '检查' : '检验' }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="price" label="价格" align="right" width="80"></el-table-column>
+                    <el-table-column label="结果类型" align="center" width="90">
+                        <template slot-scope="scope">
+                            <span>{{ resultTypeLabel(scope.row.ext) }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="单位" align="center" width="90">
+                        <template slot-scope="scope">{{ scope.row.ext ? scope.row.ext.unit : '' }}</template>
+                    </el-table-column>
+                    <el-table-column label="科室" align="center" width="80">
+                        <template slot-scope="scope">{{ scope.row.ext ? scope.row.ext.deptId : '' }}</template>
+                    </el-table-column>
+                    <el-table-column label="标记" align="center" width="170">
+                        <template slot-scope="scope">
+                            <el-tag v-if="scope.row.ext && scope.row.ext.isFasting === '1'" size="mini" type="warning" style="margin-right: 4px;">空腹</el-tag>
+                            <el-tag v-if="scope.row.ext && scope.row.ext.isRadiation === '1'" size="mini" type="danger" style="margin-right: 4px;">放射</el-tag>
+                            <el-tag v-if="scope.row.ext && scope.row.ext.isRequired === '1'" size="mini" type="success">必检</el-tag>
+                        </template>
+                    </el-table-column>
                     <el-table-column label="操作" align="center" width="130">
                         <template slot-scope="scope">
                             <el-button type="text" class="op-primary" @click="handleUpdate(scope.row)">编辑</el-button>
@@ -65,140 +91,218 @@
                 </div>
             </div>
 
-            <!-- 新增弹窗 -->
+            <!-- 新增/编辑弹窗（页签：基础信息 / 扩展信息 / 参考区间） -->
             <div class="add-form">
-                <el-dialog title="新增检查项" :visible.sync="dialogFormVisible" custom-class="unified-dialog" width="560px">
-                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="项目编码" prop="code">
-                                    <el-input v-model="formData.code" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="项目名称" prop="name">
-                                    <el-input v-model="formData.name" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="性别">
-                                    <el-select v-model="formData.sex" style="width: 293px;">
-                                        <el-option label="不限" value="0"></el-option>
-                                        <el-option label="男" value="1"></el-option>
-                                        <el-option label="女" value="2"></el-option>
-                                    </el-select>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="适用年龄">
-                                    <el-input v-model="formData.age" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="类型">
-                                    <el-select v-model="formData.type" style="width: 293px;">
-                                        <el-option label="检查" value="1"></el-option>
-                                        <el-option label="检验" value="2"></el-option>
-                                    </el-select>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="价格">
-                                    <el-input v-model="formData.price" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="24">
-                                <el-form-item label="项目说明">
-                                    <el-input v-model="formData.remark" type="textarea"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="24">
-                                <el-form-item label="注意事项">
-                                    <el-input v-model="formData.attention" type="textarea"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                    </el-form>
-                    <div slot="footer" class="dialog-footer">
-                        <el-button @click="dialogFormVisible = false">取消</el-button>
-                        <el-button type="primary" @click="handleAdd()">确定</el-button>
-                    </div>
-                </el-dialog>
-            </div>
+                <el-dialog :title="isEdit ? '编辑检查项' : '新增检查项'" :visible.sync="dialogVisible"
+                           custom-class="unified-dialog" width="760px" top="6vh">
+                    <el-form ref="dataForm" :model="formData" :rules="rules" label-position="right" label-width="100px" size="small">
+                        <el-tabs v-model="activeTab">
+                            <el-tab-pane label="基础信息" name="basic">
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="项目编码" prop="code">
+                                            <el-input v-model="formData.code" style="width: 220px;"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="项目名称" prop="name">
+                                            <el-input v-model="formData.name" style="width: 220px;"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="性别">
+                                            <el-select v-model="formData.sex" style="width: 220px;">
+                                                <el-option label="不限" value="0"></el-option>
+                                                <el-option label="男" value="1"></el-option>
+                                                <el-option label="女" value="2"></el-option>
+                                            </el-select>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="适用年龄">
+                                            <el-input v-model="formData.age" style="width: 220px;"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="类型">
+                                            <el-select v-model="formData.type" style="width: 220px;">
+                                                <el-option label="检查" value="1"></el-option>
+                                                <el-option label="检验" value="2"></el-option>
+                                            </el-select>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="价格">
+                                            <el-input v-model="formData.price" style="width: 220px;"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="24">
+                                        <el-form-item label="项目说明">
+                                            <el-input v-model="formData.remark" type="textarea"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="24">
+                                        <el-form-item label="注意事项">
+                                            <el-input v-model="formData.attention" type="textarea"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
 
-            <!-- 编辑弹窗 -->
-            <div class="add-form">
-                <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit" custom-class="unified-dialog" width="560px">
-                    <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="项目编码" prop="code">
-                                    <el-input v-model="formData.code" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="项目名称" prop="name">
-                                    <el-input v-model="formData.name" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="性别">
-                                    <el-select v-model="formData.sex" style="width: 293px;">
-                                        <el-option label="不限" value="0"></el-option>
-                                        <el-option label="男" value="1"></el-option>
-                                        <el-option label="女" value="2"></el-option>
-                                    </el-select>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="适用年龄">
-                                    <el-input v-model="formData.age" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="12">
-                                <el-form-item label="类型">
-                                    <el-select v-model="formData.type" style="width: 293px;">
-                                        <el-option label="检查" value="1"></el-option>
-                                        <el-option label="检验" value="2"></el-option>
-                                    </el-select>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="价格">
-                                    <el-input v-model="formData.price" style="width: 293px;"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="24">
-                                <el-form-item label="项目说明">
-                                    <el-input v-model="formData.remark" type="textarea"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="24">
-                                <el-form-item label="注意事项">
-                                    <el-input v-model="formData.attention" type="textarea"></el-input>
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
+                            <el-tab-pane label="扩展信息" name="ext">
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="结果类型" required>
+                                            <el-select v-model="formData.ext.resultType" style="width: 220px;">
+                                                <el-option label="数值" value="0"></el-option>
+                                                <el-option label="定性（阴阳）" value="1"></el-option>
+                                                <el-option label="文本描述" value="2"></el-option>
+                                                <el-option label="影像结论" value="3"></el-option>
+                                            </el-select>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="单位">
+                                            <el-input v-model="formData.ext.unit" style="width: 220px;" placeholder="结果类型为数值时必填"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="所属科室" required>
+                                            <el-input-number v-model="formData.ext.deptId" :min="1" controls-position="right"
+                                                             style="width: 220px;" placeholder="科室ID"></el-input-number>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="标本类型">
+                                            <el-select v-model="formData.ext.specimen" style="width: 220px;" clearable>
+                                                <el-option label="血清" value="血清"></el-option>
+                                                <el-option label="尿液" value="尿液"></el-option>
+                                                <el-option label="粪便" value="粪便"></el-option>
+                                                <el-option label="呼气" value="呼气"></el-option>
+                                                <el-option label="无" value="无"></el-option>
+                                            </el-select>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="6">
+                                        <el-form-item label="空腹">
+                                            <el-switch v-model="formData.ext.isFasting" active-value="1" inactive-value="0"></el-switch>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-form-item label="放射">
+                                            <el-switch v-model="formData.ext.isRadiation" active-value="1" inactive-value="0"></el-switch>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-form-item label="必检">
+                                            <el-switch v-model="formData.ext.isRequired" active-value="1" inactive-value="0"></el-switch>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-form-item label="双科室">
+                                            <el-switch v-model="formData.ext.dualDeptFlag" active-value="1" inactive-value="0"></el-switch>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="组内排序">
+                                            <el-input-number v-model="formData.ext.sortNo" :min="0" controls-position="right"
+                                                             style="width: 220px;"></el-input-number>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="24">
+                                        <el-form-item label="检前须知">
+                                            <el-input v-model="formData.ext.noticeText" type="textarea" maxlength="500"
+                                                      show-word-limit placeholder="供 C 端预约页展示"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
+
+                            <el-tab-pane label="参考区间" name="refs">
+                                <el-alert type="info" :closable="false" show-icon style="margin-bottom: 8px;"
+                                          :title="isEdit ? '保存时按「删旧插新」整体更新区间' : '新增检查项必须至少一条参考区间'"></el-alert>
+                                <el-button size="mini" type="primary" icon="el-icon-plus" style="margin-bottom: 8px;"
+                                           @click="addRefRow()">添加区间</el-button>
+                                <el-table size="mini" :data="formData.refs" border>
+                                    <el-table-column label="性别" width="90" align="center">
+                                        <template slot-scope="scope">
+                                            <el-select v-model="scope.row.sex" size="mini">
+                                                <el-option label="通用" value="0"></el-option>
+                                                <el-option label="男" value="1"></el-option>
+                                                <el-option label="女" value="2"></el-option>
+                                            </el-select>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="年龄下限" width="110" align="center">
+                                        <template slot-scope="scope">
+                                            <el-input-number v-model="scope.row.ageMin" :min="0" :controls="false"
+                                                             size="mini" style="width: 90px;" placeholder="不限"></el-input-number>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="年龄上限" width="110" align="center">
+                                        <template slot-scope="scope">
+                                            <el-input-number v-model="scope.row.ageMax" :min="0" :controls="false"
+                                                             size="mini" style="width: 90px;" placeholder="不限"></el-input-number>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="生理状态" width="100" align="center">
+                                        <template slot-scope="scope">
+                                            <el-select v-model="scope.row.physioState" size="mini">
+                                                <el-option label="通用" value="0"></el-option>
+                                                <el-option label="妊娠" value="1"></el-option>
+                                                <el-option label="备孕" value="2"></el-option>
+                                            </el-select>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="区间原文" min-width="140">
+                                        <template slot-scope="scope">
+                                            <el-input v-model="scope.row.refText" size="mini" placeholder="如 3.5~9.5"></el-input>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="下限" width="100" align="center">
+                                        <template slot-scope="scope">
+                                            <el-input v-model="scope.row.refMin" size="mini" placeholder="可空"></el-input>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="上限" width="100" align="center">
+                                        <template slot-scope="scope">
+                                            <el-input v-model="scope.row.refMax" size="mini" placeholder="可空"></el-input>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="优先级" width="90" align="center">
+                                        <template slot-scope="scope">
+                                            <el-input-number v-model="scope.row.priority" :min="1" :controls="false"
+                                                             size="mini" style="width: 70px;"></el-input-number>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="操作" width="70" align="center">
+                                        <template slot-scope="scope">
+                                            <el-button type="text" class="op-danger" @click="removeRefRow(scope.$index)">删除</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </el-tab-pane>
+                        </el-tabs>
                     </el-form>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="dialogFormVisible4Edit = false">取消</el-button>
-                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleSave()">确定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -218,13 +322,18 @@
                     pagination: {
                         currentPage: 1,
                         pageSize: 10,
-                        total: 0,
-                        queryString: null
+                        total: 0
+                    },
+                    searchForm: {
+                        code: '',
+                        name: ''
                     },
                     dataList: [],
                     formData: {},
-                    dialogFormVisible: false,
-                    dialogFormVisible4Edit: false,
+                    dialogVisible: false,
+                    isEdit: false,
+                    activeTab: 'basic',
+                    resultTypeMap: { '0': '数值', '1': '定性', '2': '文本', '3': '影像' },
                     rules: {
                         code: [{ required: true, message: '项目编码为必填项', trigger: 'blur' }],
                         name: [{ required: true, message: '项目名称为必填项', trigger: 'blur' }]
@@ -234,76 +343,145 @@
                     this.findPage();
                 },
                 methods: {
-                    handleEdit() {
-                        axios.post(`/checkItem/update.do`, this.formData).then(response => {
-                            if (response.data.flag) {
-                                this.dialogFormVisible4Edit = false;
-                                this.findPage();
-                                this.$message.success("修改成功");
-                            } else {
-                                this.$message.error(response.data.message);
-                            }
-                        });
+                    sexLabel(sex) {
+                        return sex == '1' ? '男' : sex == '2' ? '女' : '不限';
                     },
-                    handleAdd() {
-                        this.$refs['dataAddForm'].validate(valid => {
-                            if (valid) {
-                                axios.post(`/checkItem/add.do`, this.formData).then(response => {
-                                    this.dialogFormVisible = false;
-                                    if (response.data.flag) {
-                                        this.$message.success(response.data.message);
-                                    } else {
-                                        this.$message.error(response.data.message);
-                                    }
-                                }).finally(() => {
-                                    this.findPage();
-                                })
-                            } else {
-                                this.$message.error("表单数据校验失败");
-                                return false;
-                            }
-                        })
+                    resultTypeLabel(ext) {
+                        return ext && ext.resultType ? this.resultTypeMap[ext.resultType] || ext.resultType : '未配置';
+                    },
+                    defaultExt() {
+                        return {
+                            resultType: '2', unit: '', deptId: null, specimen: '',
+                            isFasting: '0', isRadiation: '0', isRequired: '0', dualDeptFlag: '0',
+                            sortNo: 0, defaultConclusionId: null, noticeText: ''
+                        };
+                    },
+                    emptyRef() {
+                        return { sex: '0', ageMin: null, ageMax: null, physioState: '0',
+                                 refText: '', refMin: null, refMax: null, priority: 100 };
+                    },
+                    // 空串不参与模糊查询，避免后端拼出 like '%%'
+                    buildParams() {
+                        let params = {
+                            pageNum: this.pagination.currentPage,
+                            pageSize: this.pagination.pageSize
+                        };
+                        if (this.searchForm.code) params.code = this.searchForm.code;
+                        if (this.searchForm.name) params.name = this.searchForm.name;
+                        return params;
+                    },
+                    search() {
+                        this.pagination.currentPage = 1;
+                        this.findPage();
+                    },
+                    resetSearch() {
+                        this.searchForm = { code: '', name: '' };
+                        this.search();
                     },
                     findPage() {
-                        let params = {
-                            currentPage: this.pagination.currentPage,
-                            pageSize: this.pagination.pageSize,
-                            queryString: this.pagination.queryString
-                        };
-                        axios.post(`/checkItem/findByPage.do`, params).then(response => {
+                        axios.get('/health/checkitems', { params: this.buildParams() }).then(response => {
                             this.dataList = response.data.rows;
                             this.pagination.total = response.data.total;
                         });
-                    },
-                    handleCreate() {
-                        this.formData = {};
-                        this.dialogFormVisible = true;
-                    },
-                    handleUpdate(row) {
-                        this.dialogFormVisible4Edit = true;
-                        let id = row.id;
-                        axios.get(`/checkItem/findById.do?id=${id}`).then(response => {
-                            this.formData = response.data;
-                        })
                     },
                     handleCurrentChange(currentPage) {
                         this.pagination.currentPage = currentPage;
                         this.findPage();
                     },
+                    handleCreate() {
+                        this.isEdit = false;
+                        this.activeTab = 'basic';
+                        this.formData = { sex: '0', type: '1', ext: this.defaultExt(), refs: [this.emptyRef()] };
+                        this.dialogVisible = true;
+                    },
+                    handleUpdate(row) {
+                        this.isEdit = true;
+                        this.activeTab = 'basic';
+                        axios.get('/health/checkitems/' + row.id).then(response => {
+                            let data = response.data;
+                            if (!data.ext) data.ext = this.defaultExt();
+                            if (!data.refs || !data.refs.length) data.refs = [this.emptyRef()];
+                            this.formData = data;
+                            this.dialogVisible = true;
+                        });
+                    },
+                    addRefRow() {
+                        this.formData.refs.push(this.emptyRef());
+                    },
+                    removeRefRow(index) {
+                        this.formData.refs.splice(index, 1);
+                    },
+                    // 组装提交体：价格空串转 null；refs 数值字段转数字
+                    buildPayload() {
+                        let payload = Object.assign({}, this.formData);
+                        if (payload.price === '') payload.price = null;
+                        payload.refs = (payload.refs || []).map(r => ({
+                            id: r.id || null,
+                            sex: r.sex || '0',
+                            ageMin: r.ageMin === '' ? null : r.ageMin,
+                            ageMax: r.ageMax === '' ? null : r.ageMax,
+                            physioState: r.physioState || '0',
+                            refText: r.refText,
+                            refMin: r.refMin === '' || r.refMin === null ? null : Number(r.refMin),
+                            refMax: r.refMax === '' || r.refMax === null ? null : Number(r.refMax),
+                            priority: r.priority || 100
+                        }));
+                        return payload;
+                    },
+                    // 参考区间轻校验（完整校验由后端 5012 承担）
+                    validateRefs() {
+                        for (let i = 0; i < this.formData.refs.length; i++) {
+                            let r = this.formData.refs[i];
+                            if (!r.refText) {
+                                this.$message.error('第 ' + (i + 1) + ' 条参考区间的区间原文不能为空');
+                                this.activeTab = 'refs';
+                                return false;
+                            }
+                        }
+                        return true;
+                    },
+                    handleSave() {
+                        this.$refs['dataForm'].validate(valid => {
+                            if (!valid) {
+                                this.activeTab = 'basic';
+                                return false;
+                            }
+                            if (!this.formData.ext.deptId) {
+                                this.$message.error('扩展信息：所属科室不能为空');
+                                this.activeTab = 'ext';
+                                return false;
+                            }
+                            if (this.formData.ext.resultType === '0' && !this.formData.ext.unit) {
+                                this.$message.error('结果类型为数值时必须填写单位');
+                                this.activeTab = 'ext';
+                                return false;
+                            }
+                            if (!this.formData.refs.length) {
+                                this.$message.error('新增检查项必须至少一条参考区间');
+                                this.activeTab = 'refs';
+                                return false;
+                            }
+                            if (!this.validateRefs()) return false;
+                            let payload = this.buildPayload();
+                            let request = this.isEdit
+                                ? axios.put('/health/checkitems/' + payload.id, payload)
+                                : axios.post('/health/checkitems', payload);
+                            request.then(() => {
+                                this.dialogVisible = false;
+                                this.$message.success(this.isEdit ? '修改成功' : '新增成功');
+                                this.findPage();
+                            });
+                        });
+                    },
                     handleDelete(row) {
-                        let id = row.id;
-                        this.$confirm('是否删除该项检查项？', '提示', {
+                        this.$confirm('是否删除该项检查项？被检查组引用时不可删除，扩展与区间将一并清理。', '提示', {
                             confirmButtonText: '确定',
                             cancelButtonText: '取消',
                             type: 'warning'
                         }).then(() => {
-                            axios.get(`/checkItem/deleteCheckItem.do?id=${id}`).then(response => {
-                                if (response.data.flag) {
-                                    this.$message.success("删除成功");
-                                    this.findPage();
-                                } else {
-                                    this.$message.warning(response.data.message);
-                                }
+                            axios.delete('/health/checkitems/' + row.id).then(() => {
+                                this.$message.success("删除成功");
+                                this.findPage();
                             });
                         }).catch(() => {
                         });

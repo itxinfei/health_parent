@@ -19,11 +19,18 @@
             <!-- 筛选卡片 -->
             <div class="page-card">
                 <el-form :inline="true" size="small" @submit.native.prevent>
-                    <el-form-item>
-                        <el-input placeholder="编码 / 名称 / 助记码" v-model="pagination.queryString" style="width: 240px;" clearable @clear="findPage()" @keyup.enter.native="findPage()"></el-input>
+                    <el-form-item label="检查组编码">
+                        <el-input placeholder="按编码模糊查询" v-model="searchForm.code" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
+                    </el-form-item>
+                    <el-form-item label="检查组名称">
+                        <el-input placeholder="按名称模糊查询" v-model="searchForm.name" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
+                    </el-form-item>
+                    <el-form-item label="助记码">
+                        <el-input placeholder="按助记码模糊查询" v-model="searchForm.helpCode" style="width: 160px;" clearable @clear="search()" @keyup.enter.native="search()"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button icon="el-icon-search" @click="findPage()">查询</el-button>
+                        <el-button icon="el-icon-search" @click="search()">查询</el-button>
+                        <el-button icon="el-icon-refresh-left" @click="resetSearch()">重置</el-button>
                         <el-button type="primary" icon="el-icon-plus" @click="handleCreate()">新建检查组</el-button>
                     </el-form-item>
                 </el-form>
@@ -41,7 +48,7 @@
                     <el-table-column prop="name" label="检查组名称" align="left"></el-table-column>
                     <el-table-column label="适用性别" align="center" width="90">
                         <template slot-scope="scope">
-                            <span>{{ scope.row.sex == '0' ? '不限' : scope.row.sex == '1' ? '男' : '女'}}</span>
+                            <span>{{ scope.row.sex == '1' ? '男' : scope.row.sex == '2' ? '女' : '不限' }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="helpCode" label="助记码" align="center" width="90"></el-table-column>
@@ -220,13 +227,16 @@
                     pagination: {
                         currentPage: 1,
                         pageSize: 10,
-                        total: 100,
-                        queryString: null
+                        total: 0
+                    },
+                    searchForm: {
+                        code: '',
+                        name: '',
+                        helpCode: ''
                     },
                     dataList: [],
                     formData: {},
                     tableData: [],
-                    checkitemIds: [],
                     dialogFormVisible: false,
                     dialogFormVisible4Edit: false,
                     activeName: 'first'
@@ -235,91 +245,97 @@
                     this.findPage();
                 },
                 methods: {
+                    buildParams() {
+                        let params = {
+                            pageNum: this.pagination.currentPage,
+                            pageSize: this.pagination.pageSize
+                        };
+                        if (this.searchForm.code) params.code = this.searchForm.code;
+                        if (this.searchForm.name) params.name = this.searchForm.name;
+                        if (this.searchForm.helpCode) params.helpCode = this.searchForm.helpCode;
+                        return params;
+                    },
+                    // 只提交 BO 有的字段，VO 的 checkItems/imgUrl 等派生字段不进请求体
+                    buildPayload() {
+                        return {
+                            code: this.formData.code,
+                            name: this.formData.name,
+                            helpCode: this.formData.helpCode,
+                            sex: this.formData.sex,
+                            remark: this.formData.remark,
+                            attention: this.formData.attention,
+                            checkItemIds: this.collectCheckitemIds()
+                        };
+                    },
                     // 收集勾选的检查项 id（基于 tableData 的 checked 状态）
                     collectCheckitemIds() {
                         return this.tableData.filter(item => item.checked).map(item => item.id);
                     },
+                    search() {
+                        this.pagination.currentPage = 1;
+                        this.findPage();
+                    },
+                    resetSearch() {
+                        this.searchForm = { code: '', name: '', helpCode: '' };
+                        this.search();
+                    },
                     handleEdit() {
-                        axios.post(`/checkGroup/updateCheckGroup.do?ids=${this.collectCheckitemIds()}`, this.formData).then(response => {
-                            if (response.data.flag) {
-                                this.dialogFormVisible4Edit = false;
-                                this.$message.success("更新成功！");
-                                this.findPage();
-                            } else {
-                                this.$message.error(response.data.message);
-                            }
+                        axios.put(`/health/checkgroups/${this.formData.id}`, this.buildPayload()).then(() => {
+                            this.dialogFormVisible4Edit = false;
+                            this.$message.success("更新成功！");
+                            this.findPage();
                         })
                     },
                     handleAdd() {
-                        axios.post(`/checkGroup/addCheckGroup.do?ids=${this.collectCheckitemIds()}`, this.formData).then(response => {
-                            if (response.data.flag) {
-                                this.dialogFormVisible = false;
-                                this.$message.success("添加成功！");
-                                this.checkitemIds = [];
-                                this.findPage();
-                            } else {
-                                this.$message.error(response.data.message);
-                            }
+                        axios.post(`/health/checkgroups`, this.buildPayload()).then(() => {
+                            this.dialogFormVisible = false;
+                            this.$message.success("添加成功！");
+                            this.findPage();
                         });
                     },
                     findPage() {
-                        let params = {
-                            currentPage: this.pagination.currentPage,
-                            pageSize: this.pagination.pageSize,
-                            queryString: this.pagination.queryString
-                        };
-                        axios.post(`/checkGroup/findByPage.do`, params).then(response => {
+                        axios.get(`/health/checkgroups`, { params: this.buildParams() }).then(response => {
                             this.dataList = response.data.rows;
                             this.pagination.total = response.data.total;
+                        });
+                    },
+                    loadCheckItems(checkedIds) {
+                        axios.get(`/health/checkitems/all`).then(response => {
+                            this.tableData = (response.data || []).map(item => Object.assign({
+                                checked: (checkedIds || []).indexOf(item.id) > -1
+                            }, item));
                         });
                     },
                     handleCreate() {
                         this.dialogFormVisible = true;
                         this.formData = {};
                         this.activeName = "first";
-                        axios.get(`/checkItem/findAll.do`).then(response => {
-                            this.tableData = (response.data || []).map(item => Object.assign({ checked: false }, item));
-                        });
+                        this.loadCheckItems([]);
                     },
                     handleUpdate(row) {
                         this.dialogFormVisible4Edit = true;
                         this.activeName = "first";
-                        let id = row.id;
-                        axios.get(`/checkItem/findAll.do`).then(response => {
-                            this.tableData = (response.data || []).map(item => Object.assign({ checked: false }, item));
-                        });
-                        // 已勾选的检查项回显
-                        axios.get(`/checkGroup/findById.do?id=${id}`).then(response => {
-                            let checkedIds = (response.data || []).map(item => item.id);
-                            this.tableData.forEach(item => {
-                                if (checkedIds.indexOf(item.id) > -1) {
-                                    item.checked = true;
-                                }
-                            });
-                        });
-                        // 检查组基本信息
-                        axios.get(`/checkGroup/findCheckGroupById.do?id=${id}`).then(response => {
+                        axios.get(`/health/checkgroups/${row.id}`).then(response => {
                             this.formData = response.data;
-                        })
+                        });
+                        // 组内检查项回显
+                        axios.get(`/health/checkgroups/${row.id}/checkitems`).then(response => {
+                            this.loadCheckItems((response.data || []).map(item => item.id));
+                        });
                     },
                     handleCurrentChange(currentPage) {
                         this.pagination.currentPage = currentPage;
                         this.findPage();
                     },
                     handleDelete(row) {
-                        let id = row.id;
-                        this.$confirm('是否删除该检查组？删除将同时解除其下检查项的关联。', '提示', {
+                        this.$confirm('是否删除该检查组？被套餐引用时不可删除。', '提示', {
                             confirmButtonText: '确定',
                             cancelButtonText: '取消',
                             type: 'warning'
                         }).then(() => {
-                            axios.post(`/checkGroup/deleteCheckGroup.do?id=${id}`).then(response => {
-                                if (response.data.flag) {
-                                    this.$message.success("删除成功！");
-                                    this.findPage();
-                                } else {
-                                    this.$message.error(response.data.message);
-                                }
+                            axios.delete(`/health/checkgroups/${row.id}`).then(() => {
+                                this.$message.success("删除成功！");
+                                this.findPage();
                             });
                         }).catch(() => {
                         });

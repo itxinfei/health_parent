@@ -12,6 +12,7 @@
     <modules>
         <module>xfjk-demo</module>
         <module>xfjk-generator</module>
+        <module>xfjk-health-appointment</module>
         <module>xfjk-job</module>
         <module>xfjk-system</module>
     </modules>
