@@ -260,7 +260,8 @@ public class AppOrderServiceImpl implements IAppOrderService {
 
     @Override
     public TableDataInfo<AppOrderVo> myOrders(Integer memberId, String tab, PageQuery pageQuery) {
-        List<String> flows = TAB_FLOW.get(tab);
+        // Map.of 不允许 null 键，"全部"tab（不传 tab）须先判空（13 §3.2）
+        List<String> flows = StringUtils.isBlank(tab) ? null : TAB_FLOW.get(tab);
         Page<Order> page = orderMapper.selectPage(pageQuery.build(), Wrappers.<Order>lambdaQuery()
             .eq(Order::getMemberId, memberId)
             .in(flows != null, Order::getId, memberOrderIds(memberId, flows))
