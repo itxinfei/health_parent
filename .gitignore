@@ -50,3 +50,8 @@ nbdist/
 !*/build/*.xml
 
 .flattened-pom.xml
+/scripts
+/legacy
+/.run
+/.qoder
+/.atomcode
