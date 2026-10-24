@@ -24,8 +24,8 @@ export default defineConfig(({ mode, command }) => {
       open: true,
       proxy: {
         [env.VITE_APP_BASE_API]: {
-          // 本机 fat jar 跑 8081（A2 联调实测）；容器形态由 nginx 反代 8080，随 CI 轮复核
-          target: 'http://localhost:8081',
+          // 本机 fat jar 跑 8083（8081 被 reggie 常驻占用，A2 原口径 8081）；容器形态由 nginx 反代 8080，随 CI 轮复核
+          target: 'http://localhost:8083',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp('^' + env.VITE_APP_BASE_API), '')
