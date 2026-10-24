@@ -4,10 +4,10 @@
       <div v-show="showSearch" class="mb8">
         <el-card shadow="hover">
           <el-form ref="queryFormRef" :model="queryParams" :inline="true">
-            <el-form-item label="检查组编码" prop="code">
+            <el-form-item label="编码" prop="code">
               <el-input v-model="queryParams.code" placeholder="请输入编码" clearable style="width: 180px" @keyup.enter="handleQuery" />
             </el-form-item>
-            <el-form-item label="检查组名称" prop="name">
+            <el-form-item label="名称" prop="name">
               <el-input v-model="queryParams.name" placeholder="请输入名称" clearable style="width: 180px" @keyup.enter="handleQuery" />
             </el-form-item>
             <el-form-item label="适用性别" prop="sex">
