@@ -95,9 +95,54 @@ public final class HealthErrorCode {
     public static final int IDCARD_INVALID = 6005;
 
     /**
+     * 档案必填项缺失且未标缺项，禁止签发（07 §5.2）
+     */
+    public static final int PROFILE_REQUIRED_MISSING = 6004;
+
+    /**
+     * 总检前置条件不满足（存在未检/待查项目，07 §6.3）
+     */
+    public static final int SUMMARY_PRECONDITION = 6006;
+
+    /**
      * 血压录入非法（尾数非偶，18 B5 同规则，07 §7）
      */
     public static final int BP_INVALID = 6007;
+
+    /**
+     * 数值型结果无法解析（07 §7）
+     */
+    public static final int RESULT_NOT_NUMERIC = 6008;
+
+    /**
+     * 弃检未填原因（07 §7）
+     */
+    public static final int DISCARD_REASON_REQUIRED = 6009;
+
+    /**
+     * 科室小结未填写（07 §7）
+     */
+    public static final int DEPT_SUMMARY_REQUIRED = 6010;
+
+    /**
+     * 结论词不存在或已停用（07 §7）
+     */
+    public static final int CONCLUSION_DICT_INVALID = 6011;
+
+    /**
+     * 危急值登记信息不全（07 §7，含对未判定项登记）
+     */
+    public static final int CRITICAL_INVALID = 6012;
+
+    /**
+     * 报告状态不允许该操作（07 §7.1，与 08 5006 语义对应）
+     */
+    public static final int REPORT_STATUS_ILLEGAL = 6013;
+
+    /**
+     * 结果文件逐行解析异常（07 §4，行级明细返回）
+     */
+    public static final int PARSE_ROW_ERROR = 9001;
 
     /**
      * 导出行数超限（06 §9，会员/统计导出共用）

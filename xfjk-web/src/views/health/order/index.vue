@@ -272,8 +272,8 @@ const cancelDialog = reactive<DialogOption & { row?: OrderVO }>({ visible: false
 const cancelReason = ref('');
 const postponeDialog = reactive<DialogOption & { row?: OrderVO }>({ visible: false, title: '', row: undefined });
 const postponeUntil = ref('');
-const detailDrawer = reactive({ visible: false, value: undefined as OrderVO | undefined });
-const detail = computed(() => detailDrawer.value);
+const detailDrawer = reactive({ visible: false, data: undefined as OrderVO | undefined });
+const detail = computed(() => detailDrawer.data);
 
 const setmealName = (id?: number) => setmealOptions.value.find((s) => s.id === id)?.name || (id ?? '-');
 
@@ -407,7 +407,7 @@ const handleRestoreCancel = async (row: OrderVO) => {
 
 const handleDetail = async (row: OrderVO) => {
   const res = await getOrder(row.id);
-  detailDrawer.value = res.data;
+  detailDrawer.data = res.data;
   detailDrawer.visible = true;
 };
 

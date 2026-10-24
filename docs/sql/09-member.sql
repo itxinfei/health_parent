@@ -176,24 +176,13 @@ CREATE TABLE IF NOT EXISTS `t_health_member_tag_rel` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '会员-标签关联';
 
 -- -----------------------------------------------------------------------------
--- 9.7 菜单族：会员管理顶级目录 2070（预约管理 2000 order_num=0 之下）+ 会员列表 + F 按钮
---     超级管理员绕过鉴权、测试角色 test1/test2 全量授权 ⇒ 不建 sys_role_menu 行
---     （口径同 B1~B5，17 §1.7/§1.11）
+-- 9.7 菜单族迁移说明（B7 纠偏，2026-10-24）
+--     B6 曾把会员菜单放在 2070~2079，与 12 §5.1「07 占 2100~2199」冲突。
+--     B7 已按文档段位迁至 2100（会员管理）/ 2110（会员档案）+ 2111~2118 按钮，
+--     菜单 INSERT 统一由 10-report.sql §10.9 产出；本文件只清理历史 2070 段。
 -- -----------------------------------------------------------------------------
 DELETE FROM `sys_menu` WHERE `menu_id` BETWEEN 2070 AND 2079;
 
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_dept`, `create_by`, `create_time`) VALUES
-(2070, '会员管理', 0, 1, 'member', '', '', 1, 0, 'M', 0, 0, '', 'peoples', 103, 1, NOW()),
-(2071, '会员列表', 2070, 1, 'members', 'health/member/index', '', 1, 0, 'C', 0, 0, 'health:member:list', 'user', 103, 1, NOW()),
-(2072, '会员查询', 2071, 1, '#', '', '', 1, 0, 'F', 0, 0, 'health:member:query', '#', 103, 1, NOW()),
-(2073, '会员新增', 2071, 2, '#', '', '', 1, 0, 'F', 0, 0, 'health:member:add', '#', 103, 1, NOW()),
-(2074, '会员修改', 2071, 3, '#', '', '', 1, 0, 'F', 0, 0, 'health:member:edit', '#', 103, 1, NOW()),
-(2075, '会员停用恢复', 2071, 4, '#', '', '', 1, 0, 'F', 0, 0, 'health:member:remove', '#', 103, 1, NOW()),
-(2076, '会员导出', 2071, 5, '#', '', '', 1, 0, 'F', 0, 0, 'health:member:export', '#', 103, 1, NOW()),
-(2077, '病史查询', 2071, 6, '#', '', '', 1, 0, 'F', 0, 0, 'health:memberhistory:list', '#', 103, 1, NOW()),
-(2078, '病史维护', 2071, 7, '#', '', '', 1, 0, 'F', 0, 0, 'health:memberhistory:edit', '#', 103, 1, NOW()),
-(2079, '标签设置', 2071, 8, '#', '', '', 1, 0, 'F', 0, 0, 'health:membertag:edit', '#', 103, 1, NOW());
-
 -- 9.8 自检
 SELECT TABLE_NAME, TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'xfjk' AND TABLE_NAME LIKE 't_health_member%' ORDER BY TABLE_NAME;
-SELECT menu_id, menu_name, menu_type, perms FROM sys_menu WHERE menu_id BETWEEN 2070 AND 2079 ORDER BY menu_id;
+SELECT menu_id, menu_name, menu_type, perms FROM sys_menu WHERE menu_id BETWEEN 2100 AND 2118 ORDER BY menu_id;

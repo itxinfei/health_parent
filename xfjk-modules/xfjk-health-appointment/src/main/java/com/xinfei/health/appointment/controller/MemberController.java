@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.xinfei.common.core.domain.R;
 import com.xinfei.common.excel.utils.ExcelUtil;
@@ -36,6 +37,8 @@ import com.xinfei.health.appointment.domain.vo.MemberCompletenessVo;
 import com.xinfei.health.appointment.domain.vo.MemberDetailVo;
 import com.xinfei.health.appointment.domain.vo.MemberExportVo;
 import com.xinfei.health.appointment.domain.vo.MemberVo;
+import com.xinfei.health.appointment.domain.vo.ReportCompareVo;
+import com.xinfei.health.appointment.service.IHealthReportService;
 import com.xinfei.health.appointment.service.IMemberService;
 
 import java.util.List;
@@ -56,6 +59,8 @@ import java.util.List;
 public class MemberController extends BaseController {
 
     private final IMemberService memberService;
+
+    private final IHealthReportService reportService;
 
     @Operation(summary = "分页查询会员（默认只出正常状态，07 §5.8）")
     @SaCheckPermission("health:member:list")
@@ -177,6 +182,14 @@ public class MemberController extends BaseController {
     @PutMapping("/{id}/tags")
     public R<Void> saveTags(@PathVariable Integer id, @RequestBody List<Long> tagIds) {
         return toAjax(memberService.saveTags(id, tagIds));
+    }
+
+    @Operation(summary = "指标历史对比（按检查项，18 D11）")
+    @SaCheckPermission("health:member:query")
+    @GetMapping("/{id}/compare")
+    public R<List<ReportCompareVo>> compare(@PathVariable Integer id,
+                                            @NotNull(message = "检查项id不能为空") @RequestParam("checkitemId") Long checkitemId) {
+        return R.ok(reportService.queryCompare(id, checkitemId));
     }
 
     @Operation(summary = "导出会员（脱敏，07 §9；POST form 走框架 download，03 导出约定）")
