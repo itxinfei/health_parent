@@ -45,6 +45,9 @@
     <el-card shadow="hover">
       <template #header>
         <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
+            <el-button v-hasPermi="['health:order:export']" type="warning" plain icon="Download" @click="handleExport">导出</el-button>
+          </el-col>
           <right-toolbar v-model:show-search="showSearch" @query-table="getList"></right-toolbar>
         </el-row>
       </template>
@@ -293,6 +296,20 @@ const getList = async () => {
 const handleQuery = () => {
   queryParams.value.pageNum = 1;
   getList();
+};
+
+/** 导出（03 §导出约定：download 走 POST 表单绑定，筛选与列表一致、不带分页参数） */
+const handleExport = () => {
+  const params = {
+    orderDateBegin: dateRange.value?.[0],
+    orderDateEnd: dateRange.value?.[1],
+    orderStatus: queryParams.value.orderStatus,
+    flowStatus: queryParams.value.flowStatus,
+    memberId: queryParams.value.memberId,
+    setmealId: queryParams.value.setmealId,
+    batchId: queryParams.value.batchId
+  };
+  proxy?.download('health/orders/export', params, `预约订单_${new Date().getTime()}.xlsx`);
 };
 
 const resetQuery = () => {

@@ -6,9 +6,11 @@ import com.xinfei.health.appointment.domain.bo.OrderCancelBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
+import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 预约订单与流转 服务层（08 §4.5、§5.3~§5.6）
@@ -43,6 +45,11 @@ public interface IOrderService {
      * 取消恢复：已取消 → 已预约，重新占用当日名额并清取消标记（08 §3.2）
      */
     Boolean restoreCancel(Integer orderId);
+
+    /**
+     * 按筛选条件取导出列表（手机号部分脱敏，08 §4/§8）
+     */
+    List<OrderExportVo> queryExportList(OrderQueryBo bo);
 
     /**
      * 改期：目标日 +1 成功 → 原日 -1，原子双更新（08 §5.4）

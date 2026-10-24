@@ -3,16 +3,19 @@ package com.xinfei.health.appointment.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.xinfei.common.core.domain.R;
+import com.xinfei.common.excel.utils.ExcelUtil;
 import com.xinfei.common.idempotent.annotation.RepeatSubmit;
 import com.xinfei.common.log.annotation.Log;
 import com.xinfei.common.log.enums.BusinessType;
@@ -24,9 +27,11 @@ import com.xinfei.health.appointment.domain.bo.OrderFlowBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
+import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
 import com.xinfei.health.appointment.service.IOrderService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,6 +157,18 @@ public class OrderController extends BaseController {
     public R<Void> transitFlow(@NotNull(message = "主键不能为空") @PathVariable Integer id,
                                @Validated @RequestBody OrderFlowBo bo) {
         return toAjax(orderService.transitFlow(id, bo.getToStatus(), bo.getRemark()));
+    }
+
+    /**
+     * 导出订单（03 §导出约定：表单绑定 POST，手机号脱敏 08 §8）
+     */
+    @Operation(summary = "导出订单")
+    @SaCheckPermission("health:order:export")
+    @Log(title = "预约订单", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(@Validated OrderQueryBo bo, HttpServletResponse response) {
+        List<OrderExportVo> list = orderService.queryExportList(bo);
+        ExcelUtil.exportExcel(list, "预约订单数据", OrderExportVo.class, response);
     }
 
 }

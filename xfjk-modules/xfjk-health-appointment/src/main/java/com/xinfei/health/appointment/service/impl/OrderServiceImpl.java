@@ -1,5 +1,6 @@
 package com.xinfei.health.appointment.service.impl;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -11,14 +12,17 @@ import com.xinfei.common.core.exception.ServiceException;
 import com.xinfei.health.appointment.constant.HealthErrorCode;
 import com.xinfei.health.appointment.domain.HealthOrderExt;
 import com.xinfei.health.appointment.domain.HealthOrderLog;
+import com.xinfei.health.appointment.domain.Member;
 import com.xinfei.health.appointment.domain.Order;
 import com.xinfei.health.appointment.domain.bo.OrderCancelBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
+import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
 import com.xinfei.health.appointment.mapper.HealthOrderExtMapper;
 import com.xinfei.health.appointment.mapper.HealthOrderLogMapper;
+import com.xinfei.health.appointment.mapper.MemberMapper;
 import com.xinfei.health.appointment.mapper.OrderMapper;
 import com.xinfei.health.appointment.service.IOrderService;
 import com.xinfei.health.appointment.service.IOrdersettingService;
@@ -30,6 +34,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.xinfei.health.appointment.domain.HealthOrderExt.*;
 import static com.xinfei.health.appointment.service.impl.OrderFlowStateMachine.*;
@@ -48,12 +53,27 @@ public class OrderServiceImpl implements IOrderService {
     private static final DateTimeFormatter EXAM_NO_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final OrderMapper orderMapper;
+    private final MemberMapper memberMapper;
     private final HealthOrderExtMapper extMapper;
     private final HealthOrderLogMapper logMapper;
     private final IOrdersettingService ordersettingService;
 
     @Override
     public TableDataInfo<OrderVo> queryPageList(OrderQueryBo bo, PageQuery pageQuery) {
+        LambdaQueryWrapper<Order> lqw = buildQueryWrapper(bo);
+        if (lqw == null) {
+            return TableDataInfo.build(new Page<>());
+        }
+        Page<Order> page = orderMapper.selectPage(pageQuery.build(), lqw.orderByDesc(Order::getOrderDate));
+        Page<OrderVo> voPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        voPage.setRecords(page.getRecords().stream().map(this::toVo).toList());
+        return TableDataInfo.build(voPage);
+    }
+
+    /**
+     * 列表/导出共用筛选（08 §6.4）；返回 null 表示流程状态/批次筛选无命中
+     */
+    private LambdaQueryWrapper<Order> buildQueryWrapper(OrderQueryBo bo) {
         LambdaQueryWrapper<Order> lqw = Wrappers.<Order>lambdaQuery()
             .ge(ObjectUtil.isNotNull(bo.getOrderDateBegin()), Order::getOrderDate, bo.getOrderDateBegin())
             .le(ObjectUtil.isNotNull(bo.getOrderDateEnd()), Order::getOrderDate, bo.getOrderDateEnd())
@@ -68,14 +88,50 @@ public class OrderServiceImpl implements IOrderService {
                     .select(HealthOrderExt::getOrderId))
                 .stream().map(HealthOrderExt::getOrderId).toList();
             if (ids.isEmpty()) {
-                return TableDataInfo.build(new Page<>());
+                return null;
             }
             lqw.in(Order::getId, ids);
         }
-        Page<Order> page = orderMapper.selectPage(pageQuery.build(), lqw.orderByDesc(Order::getOrderDate));
-        Page<OrderVo> voPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
-        voPage.setRecords(page.getRecords().stream().map(this::toVo).toList());
-        return TableDataInfo.build(voPage);
+        return lqw;
+    }
+
+    @Override
+    public List<OrderExportVo> queryExportList(OrderQueryBo bo) {
+        LambdaQueryWrapper<Order> lqw = buildQueryWrapper(bo);
+        if (lqw == null) {
+            return List.of();
+        }
+        List<Order> orders = orderMapper.selectList(lqw.orderByDesc(Order::getOrderDate));
+        if (orders.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> orderIds = orders.stream().map(Order::getId).toList();
+        List<Integer> memberIds = orders.stream().map(Order::getMemberId).distinct().toList();
+        var extMap = extMapper.selectList(Wrappers.<HealthOrderExt>lambdaQuery()
+                .in(HealthOrderExt::getOrderId, orderIds))
+            .stream().collect(Collectors.toMap(HealthOrderExt::getOrderId, e -> e, (a, b) -> a));
+        var memberMap = memberMapper.selectList(Wrappers.<Member>lambdaQuery().in(Member::getId, memberIds))
+            .stream().collect(Collectors.toMap(Member::getId, m -> m, (a, b) -> a));
+        return orders.stream().map(o -> {
+            OrderExportVo vo = new OrderExportVo();
+            vo.setId(o.getId());
+            vo.setOrderDate(o.getOrderDate());
+            vo.setOrderType(o.getOrderType());
+            vo.setOrderStatus(o.getOrderStatus());
+            HealthOrderExt ext = extMap.get(o.getId());
+            if (ext != null) {
+                vo.setFlowStatus(ext.getFlowStatus());
+                vo.setExamNo(ext.getExamNo());
+            }
+            Member member = memberMap.get(o.getMemberId());
+            if (member != null) {
+                vo.setMemberName(member.getName());
+                vo.setFileNumber(member.getFileNumber());
+                // 导出手机号部分脱敏（08 §8，health_export_mask=部分脱敏 本期约定）
+                vo.setPhoneNumber(DesensitizedUtil.mobilePhone(member.getPhoneNumber()));
+            }
+            return vo;
+        }).toList();
     }
 
     @Override
