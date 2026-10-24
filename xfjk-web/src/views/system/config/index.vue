@@ -149,7 +149,8 @@ const initFormData: ConfigForm = {
   configName: '',
   configKey: '',
   configValue: '',
-  configType: 'Y',
+  // 新建参数默认为非内置，否则后端禁止删除/修改（内置参数仅用于系统预置项）
+  configType: 'N',
   remark: ''
 };
 const data = reactive<PageData<ConfigForm, ConfigQuery>>({
