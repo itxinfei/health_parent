@@ -11,10 +11,6 @@ logging:
 
 --- # 监控中心服务端配置
 spring:
-  security:
-    user:
-      name: @monitor.username@
-      password: @monitor.password@
   boot:
     admin:
       ui:
