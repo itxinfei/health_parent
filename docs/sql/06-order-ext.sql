@@ -40,3 +40,22 @@ CREATE TABLE IF NOT EXISTS `t_health_order_log` (
   PRIMARY KEY (`id`),
   KEY `uk_log_order_id` (`order_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单流水（只插入不更新）';
+
+-- 6.3 项目重置与数据重收留痕（04 §5.2、08 §2.8/§5.7、18 D11；17 待确认 18 定案 a：建表回填）
+CREATE TABLE IF NOT EXISTS `t_health_item_reset_log` (
+  `id`            bigint       NOT NULL                COMMENT '雪花主键',
+  `order_id`      int          NOT NULL                COMMENT '关联 t_order.id',
+  `checkitem_id`  int          NOT NULL                COMMENT '关联 t_checkitem.id',
+  `action`        varchar(12)  NOT NULL                COMMENT '动作：重置/数据重收/复查登记/延期/延期恢复/弃检/弃检撤销（08 §2.8）',
+  `reason`        varchar(255) NOT NULL                COMMENT '原因（复查必须记，18 C7）',
+  `before_value`  varchar(255) DEFAULT NULL            COMMENT '变更前值（重置为「前状态:前结果」快照）',
+  `after_value`   varchar(255) DEFAULT NULL            COMMENT '变更后值',
+  `apply_by`      varchar(64)  DEFAULT NULL            COMMENT '复查申请人（18 C7，本期留空）',
+  `audit_by`      varchar(64)  DEFAULT NULL            COMMENT '总检审核人（18 C7，本期留空）',
+  `audit_status`  char(1)      DEFAULT NULL            COMMENT '审核状态（18 C7，本期留空）',
+  `create_by`     bigint       DEFAULT NULL            COMMENT '操作人（sys_user.id）',
+  `create_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `uk_reset_log_order` (`order_id`),
+  KEY `uk_reset_log_action` (`action`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目重置与数据重收留痕（只插入不更新）';

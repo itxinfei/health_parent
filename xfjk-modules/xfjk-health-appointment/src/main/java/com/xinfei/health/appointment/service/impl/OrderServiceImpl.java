@@ -11,6 +11,7 @@ import com.xinfei.common.mybatis.core.page.TableDataInfo;
 import com.xinfei.common.satoken.utils.LoginHelper;
 import com.xinfei.common.core.exception.ServiceException;
 import com.xinfei.health.appointment.constant.HealthErrorCode;
+import com.xinfei.health.appointment.domain.HealthItemResetLog;
 import com.xinfei.health.appointment.domain.HealthOrderExt;
 import com.xinfei.health.appointment.domain.HealthOrderLog;
 import com.xinfei.health.appointment.domain.HealthReport;
@@ -25,6 +26,7 @@ import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
 import com.xinfei.health.appointment.domain.bo.ReportSaveBo;
 import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
+import com.xinfei.health.appointment.mapper.HealthItemResetLogMapper;
 import com.xinfei.health.appointment.mapper.HealthOrderExtMapper;
 import com.xinfei.health.appointment.mapper.HealthOrderLogMapper;
 import com.xinfei.health.appointment.mapper.MemberMapper;
@@ -62,6 +64,7 @@ public class OrderServiceImpl implements IOrderService {
     private final MemberMapper memberMapper;
     private final HealthOrderExtMapper extMapper;
     private final HealthOrderLogMapper logMapper;
+    private final HealthItemResetLogMapper itemResetLogMapper;
     private final IOrdersettingService ordersettingService;
     private final IHealthReportService reportService;
 
@@ -293,6 +296,21 @@ public class OrderServiceImpl implements IOrderService {
         }
         // 已总检未撤销由报告侧 requireEditable 拒绝（18 C9）
         List<HealthReportItem> before = reportService.resetReportItems(ext.getReportId(), bo.getItemIds());
+        // 逐项快照落 t_health_item_reset_log（04 §5.2、08 §2.8，17 待确认 18 定案 a）
+        LocalDateTime now = LocalDateTime.now();
+        Long operatorId = LoginHelper.getUserId();
+        before.forEach(i -> {
+            HealthItemResetLog rl = new HealthItemResetLog();
+            rl.setOrderId(orderId);
+            rl.setCheckitemId(i.getCheckitemId());
+            rl.setAction("重置");
+            rl.setReason(bo.getReason());
+            rl.setBeforeValue(StrUtil.blankToDefault(i.getItemStatus(), "-") + ":" + StrUtil.blankToDefault(i.getResult(), "-"));
+            rl.setAfterValue(HealthReportItem.ITEM_NOT_CHECKED + ":");
+            rl.setCreateBy(operatorId);
+            rl.setCreateTime(now);
+            itemResetLogMapper.insert(rl);
+        });
         String detail = before.stream()
             .map(i -> i.getItemName() + "(" + StrUtil.blankToDefault(i.getItemStatus(), "-")
                 + ":" + StrUtil.blankToDefault(i.getResult(), "-") + ")")
