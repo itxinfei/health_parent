@@ -1,5 +1,6 @@
 package com.xinfei.common.log.aspect;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
@@ -174,23 +175,37 @@ public class LogAspect {
             if (ObjectUtil.isNotNull(o) && !isFilterObject(o)) {
                 String str = "";
                 if (o instanceof List<?> list) {
-                    List<Dict> list1 = new ArrayList<>();
+                    // 只有 JSON 对象才能按 Map 剔除敏感字段；id 等标量元素原样保留，避免丢失日志参数
+                    List<Object> list1 = new ArrayList<>();
                     for (Object obj : list) {
                         String str1 = JsonUtils.toJsonString(obj);
-                        Dict dict = JsonUtils.parseMap(str1);
-                        if (MapUtil.isNotEmpty(dict)) {
-                            MapUtil.removeAny(dict, exclude);
-                            list1.add(dict);
+                        if (StringUtils.startsWith(str1, "{")) {
+                            Dict dict = JsonUtils.parseMap(str1);
+                            if (MapUtil.isNotEmpty(dict)) {
+                                MapUtil.removeAny(dict, exclude);
+                                list1.add(dict);
+                                continue;
+                            }
                         }
+                        list1.add(obj);
                     }
                     str = JsonUtils.toJsonString(list1);
                 } else {
                     str = JsonUtils.toJsonString(o);
-                    Dict dict = JsonUtils.parseMap(str);
-                    if (MapUtil.isNotEmpty(dict)) {
-                        MapUtil.removeAny(dict, exclude);
-                        str = JsonUtils.toJsonString(dict);
+                    if (StringUtils.startsWith(str, "{")) {
+                        Dict dict = JsonUtils.parseMap(str);
+                        if (MapUtil.isNotEmpty(dict)) {
+                            MapUtil.removeAny(dict, exclude);
+                            str = JsonUtils.toJsonString(dict);
+                        }
+                    } else if (StringUtils.startsWith(str, "[{")) {
+                        List<Dict> list1 = JsonUtils.parseArrayMap(str);
+                        if (CollUtil.isNotEmpty(list1)) {
+                            list1.forEach(dict -> MapUtil.removeAny(dict, exclude));
+                            str = JsonUtils.toJsonString(list1);
+                        }
                     }
+                    // 数组 id / 普通字符串 / 数字：直接保留原 JSON，原先对它们 parseMap 会抛异常导致日志丢失
                 }
                 params.add(str);
             }
