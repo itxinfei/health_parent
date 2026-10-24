@@ -87,12 +87,6 @@
             <artifactId>xfjk-generator</artifactId>
         </dependency>
 
-        <!--  demo模块  -->
-        <dependency>
-            <groupId>com.xinfei</groupId>
-            <artifactId>xfjk-demo</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
