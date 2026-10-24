@@ -77,6 +77,33 @@ public final class HealthErrorCode {
      */
     public static final int REF_INVALID = 5012;
 
+    // ---------- 会员档案块 6001~6013（07 §7.1，03 §3 已登记） ----------
+
+    /**
+     * 会员不存在
+     */
+    public static final int MEMBER_NOT_FOUND = 6001;
+
+    /**
+     * 档案号生成冲突（重试 3 次仍撞唯一索引，07 §2.2）
+     */
+    public static final int ARCHIVE_NO_CONFLICT = 6002;
+
+    /**
+     * 身份证号不合法（18 H13 校验，07 §7）
+     */
+    public static final int IDCARD_INVALID = 6005;
+
+    /**
+     * 血压录入非法（尾数非偶，18 B5 同规则，07 §7）
+     */
+    public static final int BP_INVALID = 6007;
+
+    /**
+     * 导出行数超限（06 §9，会员/统计导出共用）
+     */
+    public static final int EXPORT_ROW_LIMIT = 6104;
+
     private HealthErrorCode() {
     }
 
