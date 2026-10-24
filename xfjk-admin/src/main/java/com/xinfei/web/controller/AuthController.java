@@ -27,8 +27,6 @@ import com.xinfei.common.satoken.utils.LoginHelper;
 import com.xinfei.common.social.config.properties.SocialLoginConfigProperties;
 import com.xinfei.common.social.config.properties.SocialProperties;
 import com.xinfei.common.social.utils.SocialUtils;
-import com.xinfei.common.sse.dto.SseMessageDto;
-import com.xinfei.common.sse.utils.SseMessageUtils;
 import com.xinfei.common.tenant.helper.TenantHelper;
 import com.xinfei.system.domain.bo.SysTenantBo;
 import com.xinfei.system.domain.vo.SysClientVo;
@@ -48,12 +46,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 认证
@@ -74,7 +69,6 @@ public class AuthController {
     private final ISysTenantService tenantService;
     private final ISysSocialService socialUserService;
     private final ISysClientService clientService;
-    private final ScheduledExecutorService scheduledExecutorService;
 
 
     /**
@@ -103,14 +97,6 @@ public class AuthController {
         loginService.checkTenant(loginBody.getTenantId());
         // 登录
         LoginVo loginVo = IAuthStrategy.login(body, client, grantType);
-
-        Long userId = LoginHelper.getUserId();
-        scheduledExecutorService.schedule(() -> {
-            SseMessageDto dto = new SseMessageDto();
-            dto.setMessage(DateUtils.getTodayHour(new Date()) + "好，欢迎登录 心飞健康 后台管理系统");
-            dto.setUserIds(List.of(userId));
-            SseMessageUtils.publishMessage(dto);
-        }, 5, TimeUnit.SECONDS);
         return R.ok(loginVo);
     }
 
