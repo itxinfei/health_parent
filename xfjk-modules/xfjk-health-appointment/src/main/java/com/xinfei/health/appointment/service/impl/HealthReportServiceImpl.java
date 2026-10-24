@@ -2,6 +2,7 @@ package com.xinfei.health.appointment.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xinfei.common.core.exception.ServiceException;
@@ -417,6 +418,64 @@ public class HealthReportServiceImpl implements IHealthReportService {
         } catch (NumberFormatException e) {
             return 1;
         }
+    }
+
+    @Override
+    public ReportVo createRegisterDraft(ReportSaveBo bo) {
+        if (StrUtil.isBlank(resolveArchiveNo(bo.getMemberId()))) {
+            return null;
+        }
+        return insertReport(bo);
+    }
+
+    @Override
+    public int restoreDelayedItems(Long reportId) {
+        List<HealthReportItem> items = itemMapper.selectList(Wrappers.<HealthReportItem>lambdaQuery()
+            .eq(HealthReportItem::getReportId, reportId)
+            .eq(HealthReportItem::getItemStatus, HealthReportItem.ITEM_DELAYED));
+        if (items.isEmpty()) {
+            return 0;
+        }
+        itemMapper.update(null, Wrappers.<HealthReportItem>lambdaUpdate()
+            .set(HealthReportItem::getItemStatus, HealthReportItem.ITEM_NOT_CHECKED)
+            .eq(HealthReportItem::getReportId, reportId)
+            .eq(HealthReportItem::getItemStatus, HealthReportItem.ITEM_DELAYED));
+        return items.size();
+    }
+
+    @Override
+    public List<HealthReportItem> resetReportItems(Long reportId, List<Long> itemIds) {
+        HealthReport report = requireReport(reportId);
+        requireEditable(report);
+        boolean partial = itemIds != null && !itemIds.isEmpty();
+        LambdaQueryWrapper<HealthReportItem> qw = Wrappers.<HealthReportItem>lambdaQuery()
+            .eq(HealthReportItem::getReportId, reportId);
+        if (partial) {
+            qw.in(HealthReportItem::getId, itemIds);
+        }
+        List<HealthReportItem> items = itemMapper.selectList(qw);
+        if (items.isEmpty()) {
+            return List.of();
+        }
+        // NOT NULL 列回默认：result 空串、abnormal 正常、标记位否（08 §5.7 清空回未检）
+        LambdaUpdateWrapper<HealthReportItem> uw = Wrappers.<HealthReportItem>lambdaUpdate()
+            .set(HealthReportItem::getItemStatus, HealthReportItem.ITEM_NOT_CHECKED)
+            .set(HealthReportItem::getResult, "")
+            .set(HealthReportItem::getAbnormalFlag, HealthReportItem.FLAG_NORMAL)
+            .set(HealthReportItem::getQualitative, null)
+            .set(HealthReportItem::getAbnormalGrade, null)
+            .set(HealthReportItem::getCriticalFlag, HealthReportItem.NO)
+            .set(HealthReportItem::getEdgeFlag, HealthReportItem.NO)
+            .set(HealthReportItem::getMajorPositive, HealthReportItem.NO)
+            .set(HealthReportItem::getCheckTime, null)
+            .set(HealthReportItem::getCheckDevice, null)
+            .set(HealthReportItem::getDiscardReason, null)
+            .eq(HealthReportItem::getReportId, reportId);
+        if (partial) {
+            uw.in(HealthReportItem::getId, itemIds);
+        }
+        itemMapper.update(null, uw);
+        return items;
     }
 
     // ------------------------------------------------------------------ 上传与解析

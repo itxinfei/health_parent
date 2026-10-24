@@ -3,6 +3,7 @@ package com.xinfei.health.appointment.service;
 import com.xinfei.common.mybatis.core.page.PageQuery;
 import com.xinfei.common.mybatis.core.page.TableDataInfo;
 import com.xinfei.health.appointment.domain.HealthConclusionDict;
+import com.xinfei.health.appointment.domain.HealthReportItem;
 import com.xinfei.health.appointment.domain.bo.ArchiveBo;
 import com.xinfei.health.appointment.domain.bo.DeptSummaryBo;
 import com.xinfei.health.appointment.domain.bo.ReportItemBo;
@@ -34,6 +35,21 @@ public interface IHealthReportService {
     ReportDetailVo queryDetail(Long id);
 
     ReportVo insertReport(ReportSaveBo bo);
+
+    /**
+     * 到诊登记建报告草稿（08 §5.5）：复用 insertReport，会员无档案号时不建并返回 null，
+     * 由调用方在订单流水注明（不抛 6001）
+     */
+    ReportVo createRegisterDraft(ReportSaveBo bo);
+
+    /** 延期恢复：延期项目级回未检（08 §5.7、18 C6），返回重置条数 */
+    int restoreDelayedItems(Long reportId);
+
+    /**
+     * 项目重置（08 §5.7、18 D11）：itemIds 为空重置全部明细，结果清空回未检；
+     * 已总检且未撤销时抛 6013（18 C9）。返回受影响明细的重置前快照供留痕。
+     */
+    List<HealthReportItem> resetReportItems(Long reportId, List<Long> itemIds);
 
     /** 附件上传（走 OSS 抽象；MinIO 凭据未配置时运行时失败，见 17 待确认 7） */
     Long uploadFile(MultipartFile file, Long reportId);

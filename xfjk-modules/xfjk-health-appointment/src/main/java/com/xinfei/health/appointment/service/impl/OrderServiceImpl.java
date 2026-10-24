@@ -2,6 +2,7 @@ package com.xinfei.health.appointment.service.impl;
 
 import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,18 +13,23 @@ import com.xinfei.common.core.exception.ServiceException;
 import com.xinfei.health.appointment.constant.HealthErrorCode;
 import com.xinfei.health.appointment.domain.HealthOrderExt;
 import com.xinfei.health.appointment.domain.HealthOrderLog;
+import com.xinfei.health.appointment.domain.HealthReport;
+import com.xinfei.health.appointment.domain.HealthReportItem;
 import com.xinfei.health.appointment.domain.Member;
 import com.xinfei.health.appointment.domain.Order;
 import com.xinfei.health.appointment.domain.bo.OrderCancelBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
+import com.xinfei.health.appointment.domain.bo.OrderResetItemsBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
+import com.xinfei.health.appointment.domain.bo.ReportSaveBo;
 import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
 import com.xinfei.health.appointment.mapper.HealthOrderExtMapper;
 import com.xinfei.health.appointment.mapper.HealthOrderLogMapper;
 import com.xinfei.health.appointment.mapper.MemberMapper;
 import com.xinfei.health.appointment.mapper.OrderMapper;
+import com.xinfei.health.appointment.service.IHealthReportService;
 import com.xinfei.health.appointment.service.IOrderService;
 import com.xinfei.health.appointment.service.IOrdersettingService;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +63,7 @@ public class OrderServiceImpl implements IOrderService {
     private final HealthOrderExtMapper extMapper;
     private final HealthOrderLogMapper logMapper;
     private final IOrdersettingService ordersettingService;
+    private final IHealthReportService reportService;
 
     @Override
     public TableDataInfo<OrderVo> queryPageList(OrderQueryBo bo, PageQuery pageQuery) {
@@ -162,12 +169,19 @@ public class OrderServiceImpl implements IOrderService {
         ext.setExamNo(examNo);
         ext.setRegisterBy(LoginHelper.getUsername());
         ext.setRegisterTime(LocalDateTime.now());
-        // 报告草稿由 07 健康评估模块建（08 §5.5），本切片仅落 ext.report_id 预留
         extMapper.updateById(ext);
         order.setOrderStatus(ORDER_STATUS_ARRIVED);
         orderMapper.updateById(order);
+        // 建报告草稿（08 §5.5）；无档案号跳过并流水注明（07 §2 建档前置）
+        ReportSaveBo draftBo = new ReportSaveBo();
+        draftBo.setMemberId(order.getMemberId());
+        draftBo.setCheckDate(order.getOrderDate());
+        draftBo.setSource(HealthReport.SOURCE_MANUAL);
+        draftBo.setOrderId(orderId);
+        draftBo.setExamNo(examNo);
+        String draftNote = reportService.createRegisterDraft(draftBo) == null ? "未建报告草稿：会员无档案号" : null;
         // 名额不回退（08 §4.5 register）
-        writeLog(orderId, "到诊", FLOW_BOOKED, FLOW_REGISTERED, remark);
+        writeLog(orderId, "到诊", FLOW_BOOKED, FLOW_REGISTERED, StrUtil.blankToDefault(remark, draftNote));
         return examNo;
     }
 
@@ -245,11 +259,12 @@ public class OrderServiceImpl implements IOrderService {
         if (bo.getUntil().isBefore(LocalDate.now())) {
             throw new ServiceException("延期日期不能早于今天", HealthErrorCode.ORDER_FLOW_ILLEGAL);
         }
+        String from = ext.getFlowStatus();
         ext.setFlowStatus(FLOW_POSTPONED);
         ext.setPostponeUntil(bo.getUntil());
         ext.setPostponeCount(ObjectUtil.defaultIfNull(ext.getPostponeCount(), 0) + 1);
         extMapper.updateById(ext);
-        writeLog(orderId, "延期", ext.getFlowStatus(), FLOW_POSTPONED, "延期至 " + bo.getUntil());
+        writeLog(orderId, "延期", from, FLOW_POSTPONED, "延期至 " + bo.getUntil());
         return true;
     }
 
@@ -262,7 +277,29 @@ public class OrderServiceImpl implements IOrderService {
         }
         ext.setFlowStatus(FLOW_REGISTERED);
         extMapper.updateById(ext);
-        writeLog(orderId, "延期恢复", FLOW_POSTPONED, FLOW_REGISTERED, null);
+        // 延期项目级回未检（08 §5.7、18 C6）
+        int restored = ext.getReportId() == null ? 0 : reportService.restoreDelayedItems(ext.getReportId());
+        writeLog(orderId, "延期恢复", FLOW_POSTPONED, FLOW_REGISTERED,
+            restored > 0 ? "项目回未检 " + restored + " 项" : null);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean resetItems(Integer orderId, OrderResetItemsBo bo) {
+        HealthOrderExt ext = requireExt(orderId);
+        if (ext.getReportId() == null) {
+            throw new ServiceException("该订单无报告草稿，无法重置项目", HealthErrorCode.REPORT_STATUS_ILLEGAL);
+        }
+        // 已总检未撤销由报告侧 requireEditable 拒绝（18 C9）
+        List<HealthReportItem> before = reportService.resetReportItems(ext.getReportId(), bo.getItemIds());
+        String detail = before.stream()
+            .map(i -> i.getItemName() + "(" + StrUtil.blankToDefault(i.getItemStatus(), "-")
+                + ":" + StrUtil.blankToDefault(i.getResult(), "-") + ")")
+            .collect(Collectors.joining("、"));
+        String remark = "项目重置" + (before.isEmpty() ? "（无明细）"
+            : " " + before.size() + " 项：" + StrUtil.maxLength(detail, 160)) + "；原因：" + bo.getReason();
+        writeLog(orderId, "项目重置", null, null, StrUtil.maxLength(remark, 255));
         return true;
     }
 

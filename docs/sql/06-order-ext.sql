@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `t_health_order_ext` (
 CREATE TABLE IF NOT EXISTS `t_health_order_log` (
   `id`            bigint       NOT NULL                COMMENT '雪花主键',
   `order_id`      int          NOT NULL                COMMENT '关联 t_order.id',
-  `action`        varchar(12)  NOT NULL                COMMENT '动作：预约/到诊/取消/改期/延期/延期恢复/备单/打印/发放/换人',
+  `action`        varchar(12)  NOT NULL                COMMENT '动作：预约/到诊/取消/改期/延期/延期恢复/项目重置/备单/打印/发放/换人',
   `from_status`   varchar(16)  DEFAULT NULL            COMMENT '迁移前流程状态',
   `to_status`     varchar(16)  DEFAULT NULL            COMMENT '迁移后流程状态',
   `operator`      varchar(64)  DEFAULT NULL            COMMENT '操作人',

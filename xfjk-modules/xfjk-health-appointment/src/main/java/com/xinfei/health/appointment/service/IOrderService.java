@@ -5,6 +5,7 @@ import com.xinfei.common.mybatis.core.page.TableDataInfo;
 import com.xinfei.health.appointment.domain.bo.OrderCancelBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
+import com.xinfei.health.appointment.domain.bo.OrderResetItemsBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
 import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
@@ -30,7 +31,7 @@ public interface IOrderService {
     OrderVo queryById(Integer id);
 
     /**
-     * 到诊登记：生成 exam_no、flow_status=已到诊、orderStatus=已到诊、写流水（08 §5.5）
+     * 到诊登记：生成 exam_no、建报告草稿（08 §5.5）、flow_status=已到诊、orderStatus=已到诊、写流水
      *
      * @return 生成的体检号
      */
@@ -62,9 +63,14 @@ public interface IOrderService {
     Boolean postpone(Integer orderId, OrderPostponeBo bo);
 
     /**
-     * 延期恢复：延期 → 已到诊，写流水（08 §5.7）
+     * 延期恢复：延期 → 已到诊，延期项目级回未检（08 §5.7、18 C6）
      */
     Boolean postponeRestore(Integer orderId);
+
+    /**
+     * 项目重置（08 §5.7、18 D11）：明细清空回未检，逐项留痕到订单流水；已总检未撤销拒绝（18 C9）
+     */
+    Boolean resetItems(Integer orderId, OrderResetItemsBo bo);
 
     /**
      * 状态迁移：仅允许 §3.2 合法边，非法迁移返回 5006（08 §4.5）

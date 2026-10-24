@@ -26,6 +26,7 @@ import com.xinfei.health.appointment.domain.bo.OrderCancelBo;
 import com.xinfei.health.appointment.domain.bo.OrderFlowBo;
 import com.xinfei.health.appointment.domain.bo.OrderPostponeBo;
 import com.xinfei.health.appointment.domain.bo.OrderQueryBo;
+import com.xinfei.health.appointment.domain.bo.OrderResetItemsBo;
 import com.xinfei.health.appointment.domain.bo.OrderRescheduleBo;
 import com.xinfei.health.appointment.domain.vo.OrderExportVo;
 import com.xinfei.health.appointment.domain.vo.OrderVo;
@@ -144,6 +145,19 @@ public class OrderController extends BaseController {
     @PutMapping("/{id}/restore")
     public R<Void> restore(@NotNull(message = "主键不能为空") @PathVariable Integer id) {
         return toAjax(orderService.restoreCancel(id));
+    }
+
+    /**
+     * 项目重置（08 §5.7、18 D11）：明细清空回未检，逐项留痕
+     */
+    @Operation(summary = "项目重置")
+    @SaCheckPermission("health:order:edit")
+    @Log(title = "预约订单", businessType = BusinessType.UPDATE)
+    @RepeatSubmit
+    @PostMapping("/{id}/reset-items")
+    public R<Void> resetItems(@NotNull(message = "主键不能为空") @PathVariable Integer id,
+                              @Validated @RequestBody OrderResetItemsBo bo) {
+        return toAjax(orderService.resetItems(id, bo));
     }
 
     /**
