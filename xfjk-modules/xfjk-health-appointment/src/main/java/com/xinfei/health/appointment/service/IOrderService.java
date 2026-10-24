@@ -40,6 +40,11 @@ public interface IOrderService {
     Boolean cancel(Integer orderId, OrderCancelBo bo);
 
     /**
+     * 取消恢复：已取消 → 已预约，重新占用当日名额并清取消标记（08 §3.2）
+     */
+    Boolean restoreCancel(Integer orderId);
+
+    /**
      * 改期：目标日 +1 成功 → 原日 -1，原子双更新（08 §5.4）
      */
     Boolean reschedule(Integer orderId, OrderRescheduleBo bo);

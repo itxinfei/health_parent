@@ -63,6 +63,14 @@ export const restorePostpone = (id: string | number) => {
   });
 };
 
+/** 取消恢复：已取消 → 已预约，重新占用当日名额（08 §3.2） */
+export const restoreCancelOrder = (id: string | number) => {
+  return request({
+    url: '/health/orders/' + id + '/restore',
+    method: 'put'
+  });
+};
+
 /** 状态迁移（仅允许 08 §3.2 合法边，非法返回 5006） */
 export const transitFlow = (id: string | number, toStatus: string, remark?: string) => {
   return request({

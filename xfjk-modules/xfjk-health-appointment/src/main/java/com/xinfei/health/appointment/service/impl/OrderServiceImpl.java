@@ -138,6 +138,29 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Boolean restoreCancel(Integer orderId) {
+        HealthOrderExt ext = requireExt(orderId);
+        Order order = requireOrder(orderId);
+        if (!FLOW_CANCELLED.equals(ext.getFlowStatus())) {
+            throw new ServiceException("当前状态不是已取消，无法恢复", HealthErrorCode.ORDER_FLOW_ILLEGAL);
+        }
+        // 取消时名额已回退，恢复须重新占用（08 §3.2）
+        if (!ordersettingService.occupy(order.getOrderDate())) {
+            throw new ServiceException("当日名额不足，无法恢复为已预约", HealthErrorCode.ORDER_FLOW_ILLEGAL);
+        }
+        // 取消标记须显式置 null，updateById 默认忽略 null 字段
+        extMapper.update(null, Wrappers.<HealthOrderExt>lambdaUpdate()
+            .set(HealthOrderExt::getFlowStatus, FLOW_BOOKED)
+            .set(HealthOrderExt::getCancelReason, null)
+            .set(HealthOrderExt::getCancelBy, null)
+            .set(HealthOrderExt::getCancelTime, null)
+            .eq(HealthOrderExt::getId, ext.getId()));
+        writeLog(orderId, "取消恢复", FLOW_CANCELLED, FLOW_BOOKED, null);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean reschedule(Integer orderId, OrderRescheduleBo bo) {
         Order order = requireOrder(orderId);
         requireExt(orderId);

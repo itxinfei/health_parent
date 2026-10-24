@@ -129,6 +129,16 @@
                 @click="handleRestore(scope.row)"
               >恢复</el-button>
             </el-tooltip>
+            <el-tooltip content="取消恢复（回 已预约，须当日名额有余量，08 §3.2）" placement="top">
+              <el-button
+                v-hasPermi="['health:order:edit']"
+                v-if="scope.row.ext?.flowStatus === '已取消'"
+                link
+                type="primary"
+                icon="RefreshLeft"
+                @click="handleRestoreCancel(scope.row)"
+              >恢复</el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -218,7 +228,7 @@
 </template>
 
 <script setup name="Order" lang="ts">
-import { listOrder, getOrder, registerOrder, cancelOrder, rescheduleOrder, postponeOrder, restorePostpone } from '@/api/health/order';
+import { listOrder, getOrder, registerOrder, cancelOrder, rescheduleOrder, postponeOrder, restorePostpone, restoreCancelOrder } from '@/api/health/order';
 import { OrderVO, OrderQuery } from '@/api/health/order/types';
 import { listAllSetmeal } from '@/api/health/setmeal';
 import { SetmealVO } from '@/api/health/setmeal/types';
@@ -368,6 +378,13 @@ const handleRestore = async (row: OrderVO) => {
   await proxy?.$modal.confirm(`确认恢复订单 ${row.id}？流程状态回「已到诊」`);
   await restorePostpone(row.id);
   proxy?.$modal.msgSuccess('已恢复');
+  await getList();
+};
+
+const handleRestoreCancel = async (row: OrderVO) => {
+  await proxy?.$modal.confirm(`确认恢复订单 ${row.id}？流程状态回「已预约」并重新占用当日名额`);
+  await restoreCancelOrder(row.id);
+  proxy?.$modal.msgSuccess('已恢复为已预约，名额已重新占用');
   await getList();
 };
 

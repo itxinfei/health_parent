@@ -2,7 +2,7 @@
 spring.boot.admin.client:
   # 增加客户端开关
   enabled: true
-  url: http://192.168.20.130:9090/admin
+  url: http://localhost:9090/admin
   instance:
     service-host-type: IP
     metadata:
@@ -19,7 +19,7 @@ snail-job:
   # SnailJob 接入验证令牌 详见 script/sql/ry_job.sql `sj_group_config` 表
   token: "SJ_cKqBTPzCsWA3VyuCfFoccmuIEGXjr5KT"
   server:
-    host: 192.168.20.130
+    host: localhost
     port: 17888
   # 命名空间UUID 详见 script/sql/ry_job.sql `sj_namespace`表`unique_id`字段
   namespace: ${spring.profiles.active}

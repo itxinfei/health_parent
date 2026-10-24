@@ -130,6 +130,18 @@ public class OrderController extends BaseController {
     }
 
     /**
+     * 取消恢复：已取消 → 已预约（08 §3.2）
+     */
+    @Operation(summary = "取消恢复")
+    @SaCheckPermission("health:order:edit")
+    @Log(title = "预约订单", businessType = BusinessType.UPDATE)
+    @RepeatSubmit
+    @PutMapping("/{id}/restore")
+    public R<Void> restore(@NotNull(message = "主键不能为空") @PathVariable Integer id) {
+        return toAjax(orderService.restoreCancel(id));
+    }
+
+    /**
      * 状态迁移（仅允许 §3.2 合法边）
      */
     @Operation(summary = "订单状态迁移")
