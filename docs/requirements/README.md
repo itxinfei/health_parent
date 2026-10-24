@@ -1,11 +1,11 @@
 # 心飞健康 · 需求与开发规范（总纲索引）
 
-> 版本：v2.12
+> 版本：v2.13
 > 更新：2026-10-24
 > 性质：本项目为「基于 AI 大模型全栈开发」的学习型全重写项目，本目录是**唯一权威需求与约束来源**。
 > 优先级：**本目录文档 > 既有代码习惯**。
 > 底座：**RuoYi-Vue-Plus 5.6.2**，本项目已自行升级至 **Spring Boot 4.1.1 / JDK 25**（决策 20，见 `17`）。
-> 前端：管理后台 `xfjk-web`（**plus-ui 工程化 SPA**：Vite 7 + Vue 3.5 + TS + Element Plus，决策 47）；C 端 `xfjk-app`（uniapp 3 + Vue 3 + TS）。**决策 47 骨架已实施（2026-10-23，`17` §1.6）；B1 首批三页（检查项/检查组/套餐）已迁 SFC、首页已自有化、若依演示/租户功能已删（2026-10-24，`17` §1.7）；B2 预约设置/预约列表两页已迁 SFC，预约管理菜单升至首页下方、系统工具已删、后台布局三处缺陷已修（2026-10-24，`17` §1.8）**——其余业务页迁移与容器/CI 改写未动。
+> 前端：管理后台 `xfjk-web`（**plus-ui 工程化 SPA**：Vite 7 + Vue 3.5 + TS + Element Plus，决策 47）；C 端 `xfjk-app`（uniapp 3 + Vue 3 + TS）。**决策 47 骨架已实施（2026-10-23，`17` §1.6）；B1 首批三页（检查项/检查组/套餐）已迁 SFC、首页已自有化、若依演示/租户功能已删（2026-10-24，`17` §1.7）；B2 预约设置/预约列表两页已迁 SFC，预约管理菜单升至首页下方、系统工具已删、后台布局三处缺陷已修（2026-10-24，`17` §1.8）；B3 禁忌规则页已迁 SFC，后台全局布局统一改造已实测（2026-10-24，`17` §1.9）**——其余业务页迁移与容器/CI 改写未动。
 
 ## 阅读与使用方式
 
@@ -140,3 +140,4 @@
 | **v2.10** | 2026-10-23 | **A2 后台前端换栈骨架落地**（`17` 决策 47 实施第一步，逐条记录见新增 `17` §1.6）：静态页 16 html + `css/js/plugins/template/WEB-INF/img` 全删（参照 `git show ecbbac2:...`）；plus-ui `v5.6.2-v2.6.2` 362 文件拷入 `xfjk-web`；env 四项对齐（标题/LOGO「心飞健康」、`ENCRYPT=false`、`PORT=8080`）+ vite proxy `/dev-api`→`localhost:8081`；`workflow` 视图/api/Process 33 文件裁剪（tenant 两视图暂留）；登录页清除上游 `admin/admin123` 硬编码预填（DENY-006），后台 `admin` 口令经改密接口换为项目统一测试口令并验证旧口令失效；`npm install`/`build:prod` 裁剪后复跑通过；Playwright+本机 Chrome 登录冒烟 `/login`→`/index` 零 console 错误。机检收口：ERROR 0（DENY-006 豁免 `src/lang/`、DENY-016 豁免 upstream `plugins/download.ts`、DENY-017 `ELEMENT.` 改大小写敏感），WARN 8 定性为 upstream console.log 接受。走查顺带修复 `sys_menu` 28 行双重编码乱码菜单名（同族问题第二例，口径并入 `12`）。回写 `02` §7 第 8~9 项（含 `/app/**` 联调状态追平）、`03` §9.1 dev 形态、`15` DENY-016/017 豁免口径。**未动**：业务 15 页迁移、`Dockerfile.web`/`nginx.conf`/`deploy.yml`（须先请示项） |
 | **v2.11** | 2026-10-24 | **B1 首批三页 SFC 迁移 + 首页自有化 + 若依残留清理**（`17` 新增 §1.7）：检查项/检查组/套餐迁至 `src/views/health/**`（三 tab 弹窗、参考区间内联编辑、`el-transfer` 级联、套餐图片 `:http-request` 上传），`sys_menu` 2010/2020/2030 改指 SFC；Playwright 全链路实测（新增→搜索→级联 moved=1→删除自清）零 console 错误。`index.vue` 重写为自有首页（hero+已上线三卡+建设中占位），`settings.ts` 主色改 `#00A870`。删 `views/demo`/`api/demo`/tenant/tenantPackage 视图与 api/RuoYiGit/RuoYiDoc 共 14 文件，`Navbar` 去租户切换与 Git/文档入口，`sys_menu` 删若依菜单族 27 行 + `sys_role_menu` 26 行。门禁：`vue-tsc` 27 错 = upstream 基线−1（顺带修 Navbar `TopBar` 导入）、`build:prod` 通过、机检 ERROR 0。回写 `02` §7 第 8~9 项。**未动**：订单/预约设置/禁忌等其余页迁移（三页旧静态页已随骨架删除，现为无页面形态）、容器/CI（须先请示）、`19` 完整视觉令牌 |
 | **v2.12** | 2026-10-24 | **B2 预约两页 SFC 迁移 + 菜单排序/系统工具删除/后台布局优化**（`17` 新增 §1.8）：预约设置/预约列表迁至 `src/views/health/{ordersetting,order}/index.vue`（行内保存不重置 `reservations`、Excel `:http-request` 导入、状态机条件按钮、详情抽屉 `el-timeline` 流水），`sys_menu` 2040/2050 改指 SFC；Playwright 两轮全链路（改期→取消回退名额差值→到诊体检号 `EX202610240001`→延期→恢复）零 console 错误，登记须 `orderDate<=今天` 为后端预期规则；缺陷登记 `已取消→已预约` 恢复边后端未实现。菜单：预约管理 `order_num`→0 升至首页正下方；系统工具（菜单 3/115/116 + 前端 `views/tool`/`api/tool`）删除，后端 `xfjk-tool` 模块保留；禁忌规则 2060 无页面先隐藏（B3 实现）。布局：检查项/检查组搜索标签折行修复、预约设置导入提示换行错位修复，全站 18 页截图盘点零 console 错误。门禁：`vue-tsc` 25 错（基线 27 减 tool 页 2）、`build:prod` 通过、机检 ERROR 0 / WARN 8 |
+| **v2.13** | 2026-10-24 | **B3 禁忌规则页 SFC 迁移 + 后台全局布局统一**（`17` 新增 §1.9）：禁忌规则迁至 `src/views/health/forbid/index.vue` + `api/health/forbid`（`19` §3.2 补行）——全量规则表、`08` §2.7 闭集 8 键条件编辑器（枚举键多选/年龄键数字/旗标键是否，未知键禁入）、条件列可读回显、启停开关（catch 幂等拦截 + 回读）、套餐试算弹窗（三档命中表）；`sys_menu` 2060 指 SFC 并恢复可见、图标改 `lock`（`warning.svg` 不存在）；Playwright 13 项全绿（含 ruleCode 唯一负例、`@RepeatSubmit` 5s 窗重试、删除自清）零 console 错误。全局布局（纯样式零业务页改动）：页容器 16px、卡片圆角/边框走 `--app-*` 令牌（EP 组件级变量须 `!important` 覆）、卡内表格去双重阴影、`.mb8`→12px、选中菜单字重 600；四页计算样式实测全中。回写 `08` §1.1 禁忌行。门禁：`vue-tsc` 25（基线不变）、`build:prod` 通过、机检 ERROR 0 / WARN 8 |

@@ -242,6 +242,47 @@
   background-color: var(--el-fill-color-light) !important;
 }
 
+/*------------- 后台布局统一（间距/卡片） -------------**/
+
+// 业务页统一内边距：覆盖 UnoCSS .p-2（8px），与 .app-container 的 16px 节奏对齐
+.app-main .p-2 {
+  padding: 16px;
+}
+
+// 搜索卡与表格卡、工具条行的间距 mb8 统一为 12px（源值改在 ruoyi.scss，避免双处维护）
+
+// 卡片：走全局圆角/边框令牌。EP 把 --el-card-* 定义在 .el-card 自身且 dist css 加载在后，
+// 同特异性普通声明压不过，必须 !important 覆变量本身
+.el-card {
+  --el-card-border-radius: var(--app-radius-lg) !important;
+  --el-card-border-color: var(--app-surface-border) !important;
+  box-shadow: var(--app-shadow-sm) !important;
+  transition: box-shadow 0.2s ease;
+
+  .el-card__header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .el-card__body {
+    padding: 16px;
+  }
+}
+
+// 卡片内表格不再叠加自身外框阴影（避免卡中卡双重投影）
+.el-card .el-table {
+  box-shadow: none;
+}
+
+// 空表占位与分页对齐节奏统一
+.el-pagination {
+  margin-top: 12px;
+}
+
+.el-card > .el-card__body > .el-pagination:last-child {
+  padding-bottom: 4px;
+}
+
 // Tabs
 .el-tabs__header {
   margin: 0 0 12px 0;

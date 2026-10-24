@@ -169,7 +169,13 @@
     }
   }
 
-  // 收起菜单后的样式
+  // 选中菜单字重强调（深浅主题共用，本块位于 #app 作用域内）
+.sidebar-container .el-menu-item.is-active,
+.sidebar-container .el-sub-menu.is-active > .el-sub-menu__title {
+  font-weight: 600;
+}
+
+// 收起菜单后的样式
   .hideSidebar {
     .sidebar-container {
       width: 54px !important;
