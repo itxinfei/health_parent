@@ -63,6 +63,32 @@ mvn clean package -DskipTests
 
 建库脚本和配置说明在 `docs/requirements/` 与 `script/` 下，需求与开发规范见 [`docs/requirements/README.md`](docs/requirements/README.md)。
 
+## 常见问题
+
+**MySQL 5.7 导 SQL 报错**
+
+用 8.0。脚本里的排序规则是 `utf8mb4_0900_ai_ci`，5.7 不认这个 collation，报错信息还指不到点子上（会说是语法错误）。
+
+**登录返回 401，账号密码没错**
+
+Sa-Token 的会话默认存 Redis，Redis 没起或者配置里的库号不对，就会这样。先确认能 `ping` 通 Redis，再看 `application.yml` 里的 `sa-token` 与 redis 配置是否指向同一个库。
+
+**管理端能登，移动端登不上**
+
+两套接口层（`xfjk-admin` 与 `xfjk-app`）的鉴权是分开的，token 不通用。移动端要走 `xfjk-app` 的登录接口重新换 token，不能拿后台的 token 直接调。
+
+**能不能换 PostgreSQL**
+
+底座 RuoYi-Vue-Plus 支持，但要自己改驱动、方言和建表脚本，体检业务里的分页和批量插入都依赖 MyBatis-Plus 的数据库方言。没试过，别按"改个配置就行"来估工。
+
+## 路线图
+
+- **当前**：体检预约主链路（项目 → 套餐 → 排期 → 预约 → 报告）
+- **下一步**：健康评估模块联调，评估结果与体检报告打通
+- **之后**：C 端小程序、危急值实时推送、体检数据看板
+
+时间不承诺，按实际进度推。
+
 ## 许可
 
 Apache-2.0，见 [LICENSE](LICENSE)。
