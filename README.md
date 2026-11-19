@@ -1,5 +1,7 @@
 # 心飞健康（xfjk）
 
+[![star](https://gitee.com/itxinfei/xfjk/badge/star.svg?theme=dark)](https://gitee.com/itxinfei/xfjk/stargazers) [![fork](https://gitee.com/itxinfei/xfjk/badge/fork.svg?theme=dark)](https://gitee.com/itxinfei/xfjk/members)
+
 **简体中文** · [English](README.en.md)
 
 体检中心的业务后台。从检查项维护、套餐配置、预约排期，一路做到报告生成、危急值提醒和健康评估。
