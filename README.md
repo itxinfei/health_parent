@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/MyBatis--Plus-3.5-red.svg" alt="mp">
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql&logoColor=white" alt="mysql">
   <img src="https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis&logoColor=white" alt="redis">
-  <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="license">
+  <img src="https://img.shields.io/badge/%E4%B8%9A%E5%8A%A1-%E4%BD%93%E6%A3%80%E9%A2%84%E7%BA%A6%20%7C%20%E5%81%A5%E5%BA%B7%E8%AF%84%E4%BC%B0-important.svg" alt="business">
 </p>
 
 <p align="center">
@@ -18,17 +18,17 @@
 </p>
 
 <p align="center">
-  <a href="#-这是什么">这是什么</a> ·
-  <a href="#-两条业务线">业务能力</a> ·
-  <a href="#-模块结构">模块</a> ·
-  <a href="#-快速开始">快速开始</a> ·
-  <a href="#-常见问题">常见问题</a> ·
+  <a href="#一这是什么">这是什么</a> ·
+  <a href="#二两条业务线">业务能力</a> ·
+  <a href="#三模块结构">模块</a> ·
+  <a href="#五快速开始">快速开始</a> ·
+  <a href="#六常见问题">常见问题</a> ·
   <a href="https://gitee.com/itxinfei/xfjk/releases">版本发布</a>
 </p>
 
 ---
 
-## 📖 这是什么
+## 一、这是什么
 
 体检中心的业务后台。从检查项维护、套餐配置、预约排期，一路做到报告生成、危急值提醒和健康评估。
 
@@ -36,9 +36,9 @@
 
 两条业务线共用一个库：用户一次体检的数据既能出报告，也能进评估，不用在两个系统之间导数据。
 
-## ✨ 两条业务线
+## 二、两条业务线
 
-### 体检预约
+### 1、体检预约
 
 | 环节 | 能力 |
 |---|---|
@@ -50,7 +50,7 @@
 | 通知 | 短信下发（预约确认、到检提醒） |
 | 会员 | 会员档案与历史体检记录 |
 
-### 健康评估
+### 2、健康评估
 
 - **量表与问卷** —— 量表、问卷、题目、选项成套管理
 - **指标计算** —— 按问卷答案算分，落到人群分类
@@ -59,7 +59,7 @@
 
 评估链路从用户填问卷一路走到分档建议，中间不做人工干预。
 
-## 🏗️ 模块结构
+## 三、模块结构
 
 ```
 xfjk/
@@ -77,7 +77,7 @@ xfjk/
 
 管理端和移动端分成两层接口，是因为两者的权限模型和数据结构不一样：后台要看到全部数据、要能改；C 端只看自己的、只能提交。混在一层，迟早要靠一堆 `if (isAdmin)` 来补。
 
-## 🔧 技术栈
+## 四、技术栈
 
 | 类别 | 选型 |
 |---|---|
@@ -91,7 +91,7 @@ xfjk/
 
 底座遵循 MIT 协议，文档见 [plus-doc.dromara.org](https://plus-doc.dromara.org)。
 
-## 🚀 快速开始
+## 五、快速开始
 
 1. 准备 JDK 25、Maven、MySQL 8.0、Redis
 2. 执行建库脚本（`script/` 下）
@@ -104,7 +104,7 @@ java -jar xfjk-admin/target/xfjk-admin.jar
 
 需求与开发规范见 [`docs/requirements/README.md`](docs/requirements/README.md)，配置说明在 `docs/requirements/` 与 `script/` 下。
 
-## ❓ 常见问题
+## 六、常见问题
 
 **1、MySQL 5.7 导 SQL 报错**
 
@@ -122,7 +122,7 @@ Sa-Token 的会话默认存 Redis，Redis 没起或者配置里的库号不对�
 
 底座支持，但要自己改驱动、方言和建表脚本，体检业务里的分页和批量插入都依赖 MyBatis-Plus 的数据库方言。没试过，别按"改个配置就行"来估工。
 
-## 🗺️ 路线图
+## 七、路线图
 
 - **当前**：体检预约主链路（项目 → 套餐 → 排期 → 预约 → 报告）
 - **下一步**：健康评估模块联调，评估结果与体检报告打通
@@ -130,17 +130,17 @@ Sa-Token 的会话默认存 Redis，Redis 没起或者配置里的库号不对�
 
 时间不承诺，按实际进度推。
 
-## 🤝 参与贡献
+## 八、参与贡献
 
 欢迎提 Issue 和 PR，规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，安全策略见 [SECURITY.md](SECURITY.md)，版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 📄 开源协议
+## 九、开源协议
 
 Apache-2.0，见 [LICENSE](LICENSE)。
 
 底座 RuoYi-Vue-Plus 的 MIT 授权继续有效，归属声明见 [NOTICE](NOTICE)。
 
-## 💬 交流
+## 十、交流
 
 作者：心飞为你飞（itxinfei）
 
