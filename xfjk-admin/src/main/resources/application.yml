@@ -180,9 +180,9 @@ springdoc:
     version: '版本号: ${project.version}'
     # 作者信息
     contact:
-      name: Lion Li
-      email: crazylionli@163.com
-      url: https://gitee.com/itxinfei/health_parent
+      name: 心飞
+      email: 747011882@qq.com
+      url: https://gitee.com/itxinfei/xfjk
   #这里定义了两个分组，可定义多个，也可以不定义
   group-configs:
     - group: 1.演示模块
