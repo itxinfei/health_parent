@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql&logoColor=white" alt="mysql">
   <img src="https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis&logoColor=white" alt="redis">
   <img src="https://img.shields.io/badge/%E4%B8%9A%E5%8A%A1-%E4%BD%93%E6%A3%80%E9%A2%84%E7%BA%A6%20%7C%20%E5%81%A5%E5%BA%B7%E8%AF%84%E4%BC%B0-important.svg" alt="business">
+  <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="license">
 </p>
 
 <p align="center">
