@@ -13,7 +13,7 @@
 | `xfjk-generator` | 已存在（框架） | 代码生成器 |
 | `xfjk-job` | 已存在（框架） | SnailJob 执行端 |
 | `xfjk-health-appointment` | **已落地** | **164 个 Java 文件 / 14 个控制器**。管理侧：`/health/checkitems`、`/health/checkgroups`、`/health/setmeals`、`/health/orders`、`/health/ordersettings`、`/health/forbids`、`/health/members`、`/health/reports`、`/health/criticals`；C 侧：`/app/auth`、`/app/sms`、`/app/setmeals`、`/app/orders`、`/app/ordersettings` |
-| `xfjk-health-assessment` | **已落地（工作区，尚未提交）** | **64 个 Java 文件 / 8 个控制器**。`/health/questionnaires`、`/health/questions`、`/health/assessments`、`/health/suggestions`、`/health/indicators`、`/health/crowds`、`/health/scales`（`ScaleController` 类级前缀声明为 `/health`）、`/app/assessments`；含算分引擎 `engine/` 两个类 |
+| `xfjk-health-assessment` | **已落地** | **64 个 Java 文件 / 8 个控制器**。`/health/questionnaires`、`/health/questions`、`/health/assessments`、`/health/suggestions`、`/health/indicators`、`/health/crowds`、`/health/scales`（`ScaleController` 类级前缀声明为 `/health`）、`/app/assessments`；含算分引擎 `engine/` 两个类，单测 `PublishValidatorTest` / `ScoringEngineTest` |
 | `xfjk-health-member` | 未建（功能寄居） | 会员接口在 `appointment` 的 `MemberController`（`/health/members`）；报告与危急值在 `ReportController` / `CriticalController` |
 | `xfjk-health-intervention` | 未建 | 无代码 |
 | `xfjk-health-knowledge` | 未建 | 无代码 |
@@ -70,4 +70,4 @@
 1. `02` §2、`09` §1.1、`README` 旧"实现现状"段曾称评估模块未开工 —— 已于 v2.21 回写，若其它文档仍出现"assessment 未创建"，以本文件为准。
 2. `xfjk-demo` 节点已从 `02` §2 删除，历史文档若引用该模块视为无效。
 3. 会员 / 报告域未按 `02` §2 规划独立成模块，而是寄居 `appointment`（见 §1 注）。
-4. **评估模块与 `12-assessment.sql` 尚未提交**：`xfjk-modules/xfjk-health-assessment/`、`docs/sql/12-assessment.sql`、`pom.xml` 的模块声明目前只在工作区（`git status` 显示未跟踪/已修改），clone 后看不到。提交前须先清 DENY：该模块现有 **ERROR 7**（DENY-003×6、DENY-004×1，集中在 `service/impl` 与 `domain/bo`），默认档基线（ERROR 0）因此被打破。
+4. **评估模块曾长期只在工作区**：`xfjk-modules/xfjk-health-assessment/`、`docs/sql/12-assessment.sql`、三处 `pom.xml` 已随 v2.22 提交；提交前该模块有 DENY-003×6 / DENY-004×1（`java.util.Date` 与 `inSql` 字符串拼接），已改为 `LocalDateTime` / `LocalDate` 与两段式删除，门禁恢复 ERROR 0 / WARN 8。

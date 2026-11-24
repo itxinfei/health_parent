@@ -76,6 +76,12 @@
             <artifactId>xfjk-health-appointment</artifactId>
         </dependency>
 
+        <!--  健康评估业务模块（09）  -->
+        <dependency>
+            <groupId>com.xinfei</groupId>
+            <artifactId>xfjk-health-assessment</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.xinfei</groupId>
             <artifactId>xfjk-job</artifactId>
