@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/business-medical%20exam-important" alt="Business">
   <br>
   <img src="https://img.shields.io/badge/JDK-25%20LTS-orange?logo=openjdk&logoColor=white" alt="JDK">
-  <img src="https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen?logo=springboot&logoColor=white" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1.3-brightgreen?logo=springboot&logoColor=white" alt="Spring Boot">
   <img src="https://img.shields.io/badge/Sa--Token-1.46-red" alt="Sa-Token">
   <img src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white" alt="MySQL">
   <img src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white" alt="Redis">
@@ -62,10 +62,10 @@ Admin and mobile run on separate API layers because their permission models and 
 |---|---|
 | Foundation | RuoYi-Vue-Plus (MIT) |
 | JDK | 25 |
-| Framework | Spring Boot 4.1.1 |
+| Framework | Spring Boot 4.1.3 |
 | Auth | Sa-Token + JWT |
 | ORM | MyBatis-Plus |
-| Database | MySQL (PostgreSQL switchable) |
+| Database | MySQL 9.7 LTS (8.4.11 fallback, PostgreSQL switchable) |
 | Cache | Redis + Redisson |
 
 See the [upstream project](https://gitee.com/dromara/RuoYi-Vue-Plus) and [docs](https://plus-doc.dromara.org).
