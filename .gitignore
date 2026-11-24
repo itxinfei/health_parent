@@ -55,7 +55,8 @@ nbdist/
 !*/build/*.xml
 
 .flattened-pom.xml
-/scripts
+/scripts/*
+!/scripts/check-deny.ps1
 /legacy
 /.run
 /.qoder
