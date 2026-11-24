@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/JDK-25-orange.svg" alt="jdk">
   <img src="https://img.shields.io/badge/Spring%20Boot-4.1.3-6DB33F.svg?logo=springboot&logoColor=white" alt="spring">
   <img src="https://img.shields.io/badge/MyBatis--Plus-3.5-red.svg" alt="mp">
-  <img src="https://img.shields.io/badge/MySQL-9.7-4479A1.svg?logo=mysql&logoColor=white" alt="mysql">
+  <img src="https://img.shields.io/badge/MySQL-8.4-4479A1.svg?logo=mysql&logoColor=white" alt="mysql">
   <img src="https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis&logoColor=white" alt="redis">
   <img src="https://img.shields.io/badge/%E4%B8%9A%E5%8A%A1-%E4%BD%93%E6%A3%80%E9%A2%84%E7%BA%A6%20%7C%20%E5%81%A5%E5%BA%B7%E8%AF%84%E4%BC%B0-important.svg" alt="business">
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="license">
@@ -87,14 +87,14 @@ xfjk/
 | 框架 | Spring Boot 4.1.3 |
 | 认证 | Sa-Token + JWT |
 | ORM | MyBatis-Plus |
-| 数据库 | MySQL 9.7 LTS（回退 8.4.11，可切 PostgreSQL 17） |
+| 数据库 | MySQL 8.4.11 LTS（tag 写死补丁号） |
 | 缓存 | Redis + Redisson |
 
 底座遵循 MIT 协议，文档见 [plus-doc.dromara.org](https://plus-doc.dromara.org)。
 
 ## 五、快速开始
 
-1. 准备 JDK 25、Maven、MySQL 9.7（或 8.4.11）、Redis 7.4
+1. 准备 JDK 25、Maven、MySQL 8.4.11、Redis 7.4
 2. 执行建库脚本（`script/` 下）
 3. 改数据源与 Redis 配置，打包启动
 
@@ -109,7 +109,7 @@ java -jar xfjk-admin/target/xfjk-admin.jar
 
 **1、MySQL 5.7 导 SQL 报错**
 
-用 9.7 LTS（或 8.4.11）。脚本里的排序规则是 `utf8mb4_0900_ai_ci`，5.7 不认这个 collation，报错信息还指不到点子上（会说是语法错误）。
+用 8.4.11。脚本里的排序规则是 `utf8mb4_0900_ai_ci`，5.7 不认这个 collation，报错信息还指不到点子上（会说是语法错误）。
 
 **2、登录返回 401，账号密码没错**
 
