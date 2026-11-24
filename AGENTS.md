@@ -7,7 +7,7 @@
 
 ## 版本铁律（违反即打回）
 
-- JDK **25**、Spring Boot **4.1.3**、Jackson **3**（`tools.jackson`）、MySQL **8.4.11**（tag 写死补丁号，不用 9.x）。
+- JDK **25**、Spring Boot **4.1.3**、Jackson **3**（`tools.jackson`）、MySQL **8.4.13**（tag 写死补丁号，不用 9.x）。
 - **禁止**把 Spring Boot 改回 `4.1.1`/`4.1.0`/`4.1.2`，**禁止**擅自改到 `4.2.x`（4.2 刚 GA，Spring Cloud 2026.0 仍 RC）。变更须走基线文档 §5 流程：批准 → 落地 → 回写基线表 + `17` 决策记录 + `CHANGELOG`。
 - 禁止在无关业务改动里顺带升降依赖版本或改 `package-lock.json`。
 - 禁止回退 Jackson 3 到 `com.fasterxml.jackson`。

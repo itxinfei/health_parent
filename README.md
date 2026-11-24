@@ -87,14 +87,14 @@ xfjk/
 | 框架 | Spring Boot 4.1.3 |
 | 认证 | Sa-Token + JWT |
 | ORM | MyBatis-Plus |
-| 数据库 | MySQL 8.4.11 LTS（tag 写死补丁号） |
+| 数据库 | MySQL 8.4.13 LTS（tag 写死补丁号） |
 | 缓存 | Redis + Redisson |
 
 底座遵循 MIT 协议，文档见 [plus-doc.dromara.org](https://plus-doc.dromara.org)。
 
 ## 五、快速开始
 
-1. 准备 JDK 25、Maven、MySQL 8.4.11、Redis 7.4
+1. 准备 JDK 25、Maven、MySQL 8.4.13、Redis 7.4
 2. 执行建库脚本（`script/` 下）
 3. 改数据源与 Redis 配置，打包启动
 
@@ -109,7 +109,7 @@ java -jar xfjk-admin/target/xfjk-admin.jar
 
 **1、MySQL 5.7 导 SQL 报错**
 
-用 8.4.11。脚本里的排序规则是 `utf8mb4_0900_ai_ci`，5.7 不认这个 collation，报错信息还指不到点子上（会说是语法错误）。
+用 8.4.13。脚本里的排序规则是 `utf8mb4_0900_ai_ci`，5.7 不认这个 collation，报错信息还指不到点子上（会说是语法错误）。
 
 **2、登录返回 401，账号密码没错**
 

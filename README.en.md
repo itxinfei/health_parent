@@ -65,7 +65,7 @@ Admin and mobile run on separate API layers because their permission models and 
 | Framework | Spring Boot 4.1.3 |
 | Auth | Sa-Token + JWT |
 | ORM | MyBatis-Plus |
-| Database | MySQL 8.4.11 LTS (pinned tag) |
+| Database | MySQL 8.4.13 LTS (pinned tag) |
 | Cache | Redis + Redisson |
 
 See the [upstream project](https://gitee.com/dromara/RuoYi-Vue-Plus) and [docs](https://plus-doc.dromara.org).
