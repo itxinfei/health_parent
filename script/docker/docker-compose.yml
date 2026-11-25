@@ -27,7 +27,7 @@ services:
     network_mode: "host"
 
   nginx-web:
-    image: nginx:1.23.4
+    image: nginx:1.30.7
     container_name: nginx-web
     environment:
       # 时区上海
@@ -48,7 +48,7 @@ services:
     network_mode: "host"
 
   redis:
-    image: redis:7.2.8
+    image: redis:8.10.3
     container_name: redis
     ports:
       - "6379:6379"
