@@ -4,7 +4,8 @@ import JSEncrypt from 'jsencrypt';
 const publicKey = import.meta.env.VITE_APP_RSA_PUBLIC_KEY;
 
 // 前端不建议存放私钥 不建议解密数据 因为都是透明的意义不大
-const privateKey = import.meta.env.VITE_APP_RSA_PRIVATE_KEY;
+// 私钥不入库，仅本地 .env.local 可选提供
+const privateKey = import.meta.env.VITE_APP_RSA_PRIVATE_KEY ?? '';
 
 // 加密
 export const encrypt = (txt: string) => {
@@ -15,6 +16,9 @@ export const encrypt = (txt: string) => {
 
 // 解密
 export const decrypt = (txt: string) => {
+  if (!privateKey) {
+    throw new Error('未配置 VITE_APP_RSA_PRIVATE_KEY，前端已不再内置私钥');
+  }
   const encryptor = new JSEncrypt();
   encryptor.setPrivateKey(privateKey); // 设置私钥
   return encryptor.decrypt(txt); // 对数据进行解密
